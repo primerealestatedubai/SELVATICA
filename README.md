@@ -16,6 +16,7 @@ cd site && python3 -m http.server 8765
 | Front screen | Hover any level of the tower: a soft gray glass band lights that level and the glass card on the right shows its number, plan and availability. The card opens on level 7. |
 | Click the **rooftop** (top level) | Clip 1 pushes in to the top of the tower, clip 2 swings to the corner view of the rooftop amenities. **Back** (or Esc) plays it in reverse. |
 | **Show top view** (on the corner view) | Clip 3 tips the view straight down onto the plan. The **Top floor** plan shows first, with a **Main floor / Top floor** switch (cross-fade). Hover an area to see its name. **Back to corner view** reverses it (from the main floor it settles on the top floor first). |
+| Hover the spot by the **fire pit** (rooftop corner view) | A glass label says "Click to explore". Clicking glides the camera down to the terrace and spiral staircase (clip 7). On that view, **scrolling** (wheel, touch drag or arrow keys) turns the camera to the infinity pool (clip 8). **Back** eases the scroll to the start, then reverses clip 7. |
 | Click **level 30** | Clip 1 pushes in, then clip 6 redraws the building as a sketch and lifts the level into its 3D floor plan. **Back** reverses it. |
 
 ## Files
@@ -33,6 +34,8 @@ site/
   stage2.mp4          clip 2: top of the tower to the rooftop corner view (1080p, 3 s)
   stage3.mp4          clip 3: corner view to the straight-down top view   (1080p, 4 s)
   stage6.mp4          clip 6: top of the tower to the level 30 3D plan    (720p enlarged, 6 s)
+  stage7.mp4          clip 7: rooftop corner view to the terrace / staircase (1080p, 5 s)
+  stage8.mp4          clip 8: terrace to the pool, scrubbed by scrolling   (720p enlarged, 5 s)
 tools/                helper scripts used while making the clips (see below)
 .github/workflows/pages.yml   GitHub Pages deployment
 ```
@@ -56,6 +59,9 @@ The values in the file now are **random placeholders** (2 or 3 per level).
 | --- | --- |
 | `RATE` | Playback speed of the rooftop flight (3.2 = about 2 s). |
 | `RATE3`, `RATE5` | Speed of the top-view clip and of the level 30 clip. |
+| `RATE6` | Speed of the terrace glide (4.2 = about 1.2 s). |
+| `SCROLL_PX` | Wheel distance for the whole pool clip (1500). |
+| `SPOT` | Centre and size of the fire pit hover spot, as fractions of the rooftop picture. |
 | `DEFAULT_LEVEL` | Level the card shows before anything is hovered (7). |
 | `FLOOR_LEVEL` | The level that opens the 3D plan (30). |
 | `COUNT`, `TOP`, `PITCH`, `X0`, `X1` | The hover grid laid over `building.webp`. Add `?grid` to the URL to see every band. |
@@ -72,6 +78,8 @@ The values in the file now are **random placeholders** (2 or 3 per level).
 - Top-view area names come from the labelled amenity plans; their outlines were drawn by eye and may need nudging.
 - Floor plan: only level 30 opens a 3D plan; floors 1 to 5 show "Plan to follow".
 - Floor plans, Available units and booking actions are not built yet (the side menu was removed).
+- Clips 6 and 8 are 720p enlarged to 1920x1080; upscale them to 1080p for full sharpness.
+- The pool view (end of the scroll) is the last stop so far; more clips are to follow.
 
 ## Regenerating a clip
 

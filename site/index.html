@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Selvática Residences</title>
-<meta name="description" content="Selvática Residences by Privé Real Estate: hover each level of the tower, then open the rooftop amenities or a 3D floor plan.">
+<meta name="description" content="Selvática Residences by Privé Real Estate: hover each level of the tower, then open the rooftop amenities, the terrace or a 3D floor plan.">
 <meta name="theme-color" content="#0b1a28">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -92,10 +92,10 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
 
 /* Brand, headline block and numbers (all placeholders for copy except the logos) */
 #ui { position: absolute; inset: 0; pointer-events: none; z-index: 3; }   /* above the plan renders (z-index 1 and 2), so the logo is never covered */
-#brand { filter: drop-shadow(0 1px 3px rgba(6, 11, 19, .75)) drop-shadow(0 0 14px rgba(6, 11, 19, .7)); position: absolute; left: clamp(28px, 5.5vw, 96px); top: max(24px, env(safe-area-inset-top, 0px)); width: clamp(84px, 8.5vw, 128px); height: auto; display: block; }
+#brand { position: absolute; left: clamp(28px, 5.5vw, 96px); top: max(24px, env(safe-area-inset-top, 0px)); width: clamp(84px, 8.5vw, 128px); height: auto; display: block; }
 #intro, #stats { transition: opacity .45s ease, transform .6s ease; }
 #brand { transition: filter .8s ease; }
-#ui.onlight #brand { filter: brightness(.16) saturate(.5) drop-shadow(0 0 10px rgba(255, 255, 255, .55)); }   /* the 3D plan has a light background */
+#ui.onlight #brand { filter: brightness(.16) saturate(.5); }   /* the 3D plan has a light background: the logo turns dark, with no glow */
 #ui.hide #intro { opacity: 0; transform: translateY(calc(-58% + 10px)); }
 #ui.hide #stats { opacity: 0; transform: translateY(10px); }
 #intro { position: absolute; left: clamp(28px, 5.5vw, 96px); top: 50%; transform: translateY(-58%); width: clamp(240px, 26vw, 400px); }
@@ -192,17 +192,26 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
 #areas.on { opacity: 1; }
 .area { fill: #cfd6de; fill-opacity: 0; transition: fill-opacity .35s ease; }
 .area.hot { fill-opacity: .26; }                 /* a very light wash: the plan stays clearly visible */
-#tip {
+#tip, #spotTip {
   position: absolute; left: 0; top: 0; z-index: 6; pointer-events: none; opacity: 0; display: flex; align-items: baseline; gap: 10px; padding: 10px 16px 11px; border-radius: 12px; color: var(--cream);
   background: linear-gradient(180deg, rgba(40, 48, 58, .62), rgba(24, 30, 38, .56)); border: 1px solid rgba(255, 255, 255, .26);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 10px 28px rgba(var(--shade), .34);
   -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
   transition: opacity .18s ease; will-change: transform;
 }
-#tip.on { opacity: 1; }
-#tip .n { font: 500 11px/1 var(--font-body); letter-spacing: .14em; color: var(--cream-dim); font-variant-numeric: tabular-nums; }
-#tip .t { font: 500 20px/1 var(--font-display); letter-spacing: .01em; white-space: nowrap; }
+#tip.on, #spotTip.on { opacity: 1; }
+#tip .n, #spotTip .n { font: 500 11px/1 var(--font-body); letter-spacing: .14em; color: var(--cream-dim); font-variant-numeric: tabular-nums; }
+#tip .t, #spotTip .t { font: 500 20px/1 var(--font-display); letter-spacing: .01em; white-space: nowrap; }
 #shade.dim.dimmer { opacity: .2; }
+#v6 { transition: opacity .25s linear; }          /* the terrace clip fades in over the corner view's last frame (and out again on Back), so the change in sharpness is not seen as a jump */
+#v8 { transition: opacity .25s linear; }
+#scrollCue { position: absolute; left: 50%; bottom: max(26px, env(safe-area-inset-bottom, 0px)); z-index: 4; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 10px; pointer-events: none; opacity: 0; transition: opacity .5s ease; font: 500 10px/1 var(--font-body); letter-spacing: .3em; text-transform: uppercase; color: var(--cream); text-shadow: 0 1px 10px rgba(6, 11, 19, .6); }
+#scrollCue.on { opacity: 1; }
+#scrollCue i { display: block; width: 1px; height: 38px; background: linear-gradient(180deg, rgba(244, 234, 214, 0), rgba(244, 234, 214, .95)); transform-origin: top; animation: cue 1.8s ease-in-out infinite; }
+@keyframes cue { 0% { transform: scaleY(0); opacity: 0; } 40% { transform: scaleY(1); opacity: 1; } 100% { transform: scaleY(1) translateY(10px); opacity: 0; } }
+#spotGlow { position: absolute; left: 0; top: 0; z-index: 2; pointer-events: none; opacity: 0; transition: opacity .35s ease; background: radial-gradient(closest-side, rgba(255, 244, 222, .42), rgba(255, 244, 222, .16) 55%, rgba(255, 244, 222, 0) 100%); mix-blend-mode: soft-light; }
+#spotGlow.on { opacity: 1; }
+#spotTip .t { font-size: 17px; letter-spacing: .02em; }
 
 #cta {
   position: absolute; left: 50%; bottom: max(30px, env(safe-area-inset-bottom, 0px)); z-index: 4; transform: translate(-50%, 12px); opacity: 0; pointer-events: none;
@@ -243,6 +252,7 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
 @media (prefers-reduced-motion: reduce) {
   #glass { transition: opacity .1s linear; }
   #glass.tick::after, #cNum.tick { animation: none; }
+  #scrollCue i { animation: none; opacity: .8; transform: none; }
 }
 </style>
 </head>
@@ -252,6 +262,8 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
   <img id="tower" src="building.webp" alt="Elevation of the tower with balconies facing the sea" draggable="false">
   <video id="v1" class="vid" src="stage1.mp4" muted playsinline preload="auto" aria-hidden="true"></video>
   <video id="v2" class="vid" src="stage2.mp4" muted playsinline preload="auto" aria-hidden="true"></video>
+  <video id="v6" class="vid" src="stage7.mp4" muted playsinline preload="metadata" aria-hidden="true"></video>
+  <video id="v8" class="vid" src="stage8.mp4" muted playsinline preload="auto" aria-hidden="true"></video>
   <video id="v3" class="vid" src="stage3.mp4" muted playsinline preload="auto" aria-hidden="true"></video>
   <video id="v5" class="vid" src="stage6.mp4" muted playsinline preload="metadata" aria-hidden="true"></video>
   <img id="planMain" class="plan" src="plan_main.webp" alt="Main floor of the rooftop amenities, seen from above" draggable="false">
@@ -293,6 +305,9 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
     <button type="button" role="tab" data-p="top" aria-selected="false">Top floor</button>
   </div>
   <div id="tip" aria-hidden="true"><span class="n"></span><span class="t"></span></div>
+  <div id="spotGlow" aria-hidden="true"></div>
+  <div id="scrollCue" aria-hidden="true"><span>Scroll</span><i></i></div>
+  <div id="spotTip" aria-hidden="true"><span class="t">Click to explore</span></div>
 </div>
 
 <script>
@@ -324,7 +339,7 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
   }
 
   var stage = document.getElementById("stage"), tower = document.getElementById("tower");
-  var v5 = document.getElementById("v5"), v3 = document.getElementById("v3"), planMain = document.getElementById("planMain"), planTop = document.getElementById("planTop"), areasSvg = document.getElementById("areas");
+  var v8 = document.getElementById("v8"), v6 = document.getElementById("v6"), v5 = document.getElementById("v5"), v3 = document.getElementById("v3"), planMain = document.getElementById("planMain"), planTop = document.getElementById("planTop"), areasSvg = document.getElementById("areas");
   var v1 = document.getElementById("v1"), v2 = document.getElementById("v2"), sideL = document.getElementById("sideL"), sideR = document.getElementById("sideR");
   var glass = document.getElementById("glass");
   var S = 1, OX = 0, OY = 0, current = null, lastX = 0, lastY = 0, raf = 0, lastBuzz = 0;
@@ -349,7 +364,7 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
     [tower, v1, v2].forEach(function (el) { el.style.webkitMaskImage = fade; el.style.maskImage = fade; });                // top-anchored at rest, centred once the camera has risen
     tower.style.width = IMG_W * S + "px"; tower.style.height = IMG_H * S + "px";
     tower.style.left = OX + "px"; tower.style.top = OY + "px";
-    [v1, v2, v3, v5, planMain, planTop, areasSvg].forEach(function (v) { v.style.width = IMG_W * S + "px"; v.style.height = IMG_H * S + "px"; v.style.left = OX + "px"; v.style.top = OY + "px"; });
+    [v1, v2, v3, v5, v6, v8, planMain, planTop, areasSvg].forEach(function (v) { v.style.width = IMG_W * S + "px"; v.style.height = IMG_H * S + "px"; v.style.left = OX + "px"; v.style.top = OY + "px"; });
   }
 
   function place(b, instant) {
@@ -474,6 +489,7 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
 
   function onPoint(e) {
     if (mode === "top") { topHover(e); return; }
+    if (mode === "roof") { spotHover(e); return; }
     if (!atTop) return;
     var r = stage.getBoundingClientRect();
     lastX = e.clientX - r.left; lastY = e.clientY - r.top;
@@ -482,7 +498,7 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
 
   stage.addEventListener("pointermove", onPoint);
   stage.addEventListener("pointerdown", onPoint);
-  stage.addEventListener("pointerleave", function (e) { if (e.pointerType === "mouse") { setBand(null); if (mode === "top") setHot(null); } });
+  stage.addEventListener("pointerleave", function (e) { if (e.pointerType === "mouse") { setBand(null); if (mode === "top") setHot(null); spotOn(false); } });
   stage.addEventListener("pointerup", function (e) { if (e.pointerType !== "mouse") setTimeout(function () { setBand(null); if (mode === "top") setHot(null); }, 1400); });
 
   function drawGrid() {
@@ -751,6 +767,114 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
     })(t0);
   }
 
+  // ---- Rooftop corner view: a hover spot by the fire pit opens the terrace view (the clip lowers the camera down to it) ----
+  var SPOT = { x: 0.5507, y: 0.6714, rx: 0.06, ry: 0.085 };   // centre and half-size as fractions of the picture (marked on the corner view)
+  var RATE6 = 4.2;                                 // playback speed of the terrace clip (1 = natural, 5 s; 4.2 = about 1.2 s)
+  var s6 = new Scrubber(v6), spotIn = false, spotX = 0, spotY = 0, spotRaf = 0;
+  var spotTipEl = document.getElementById("spotTip"), spotGlow = document.getElementById("spotGlow");
+
+  function spotOn(on) {
+    if (on === spotIn) return; spotIn = on;
+    spotTipEl.classList.toggle("on", on); spotGlow.classList.toggle("on", on);
+    stage.style.cursor = on ? "pointer" : "default";
+    if (on) {
+      var W = IMG_W * S, H = IMG_H * S;
+      spotGlow.style.width = SPOT.rx * 2.6 * W + "px"; spotGlow.style.height = SPOT.ry * 2.6 * H + "px";
+      spotGlow.style.left = OX + SPOT.x * W - SPOT.rx * 1.3 * W + "px"; spotGlow.style.top = OY + SPOT.y * H - SPOT.ry * 1.3 * H + "px";
+    }
+  }
+  function inSpot(x, y) {
+    var dx = ((x - OX) / (IMG_W * S) - SPOT.x) / SPOT.rx, dy = ((y - OY) / (IMG_H * S) - SPOT.y) / SPOT.ry;
+    return dx * dx + dy * dy <= 1;
+  }
+  function moveSpotTip() {
+    spotRaf = 0;
+    var w = stage.clientWidth, h = stage.clientHeight, tw = spotTipEl.offsetWidth, th = spotTipEl.offsetHeight, x = spotX + 22, y = spotY + 22;
+    if (x + tw > w - 10) x = spotX - tw - 22;
+    if (y + th > h - 10) y = spotY - th - 22;
+    spotTipEl.style.transform = "translate(" + Math.max(10, x) + "px," + Math.max(10, y) + "px)";
+  }
+  function spotHover(e) {
+    var r = stage.getBoundingClientRect(); spotX = e.clientX - r.left; spotY = e.clientY - r.top;
+    var onUi = e.target && e.target.closest && e.target.closest("button");
+    var hit = !onUi && inSpot(spotX, spotY);
+    spotOn(hit);
+    if (hit && !spotRaf) spotRaf = requestAnimationFrame(moveSpotTip);
+  }
+
+  function goSpot() {
+    if (mode !== "roof") return;
+    mode = "spotpl"; var my = ++token; spotOn(false); backBtn.classList.remove("on"); cta.classList.remove("on");
+    v6.pause(); v6.playbackRate = RATE6;
+    seekTo(v6, 0).then(function () {
+      if (my !== token) return;
+      v6.style.opacity = 1; var pr = v6.play(); if (pr && pr.catch) pr.catch(function () {});
+      (function loop() {
+        if (my !== token) return;
+        if (v6.currentTime < (v6.duration || 5) - 0.05 && !v6.ended) { dirty = true; requestAnimationFrame(loop); return; }
+        v6.pause(); mode = "spot"; backBtn.classList.add("on"); dirty = true; scrollT = scrollC = 0; scrollStart();
+      })();
+    });
+  }
+  function backSpot() {
+    if (mode !== "spot") return;
+    mode = "spotpl"; var my = ++token; backBtn.classList.remove("on"); v6.pause();
+    scrollT = 0; scrollCue.classList.remove("on");
+    (function settle() {                            // if the visitor has scrolled on, ease back to the terrace view first
+      if (my !== token) return;
+      if (scrollC > 0.004) { requestAnimationFrame(settle); return; }
+      scrollC = 0; v8.style.opacity = 0; scrollLive = false; scrubbing = true; reverse();
+    })();
+    function reverse() {
+    var d = v6.duration || 5, last = d - 0.05, t0 = performance.now();
+    s6.want = last;                                // so the scrub helper does not pull the clip back to an old target
+    (function loop(now) {
+      if (my !== token) return;
+      var t = Math.max(0, last - (now - t0) / 1000 * RATE6);
+      s6.seek(t); dirty = true;
+      if (t > 0) { requestAnimationFrame(loop); return; }
+      seekTo(v6, 0).then(function () {
+        if (my !== token) return;
+        scrubbing = false; v6.style.opacity = 0;
+        setTimeout(function () { if (my !== token) return; mode = "roof"; backBtn.classList.add("on"); showCta("Show top view"); dirty = true; }, 270);
+      });
+    })(t0);
+    }
+  }
+
+  // ---- Terrace view: scrolling (wheel, touch drag or arrow keys) scrubs the next clip, so the camera turns to the pool ----
+  var SCROLL_PX = 1500;                            // wheel distance for the whole clip
+  var s8 = new Scrubber(v8), scrollT = 0, scrollC = 0, scrollLive = false, touchY = null;
+  var scrollCue = document.getElementById("scrollCue");
+  function scrollStart() { scrollLive = true; requestAnimationFrame(scrollTick); setTimeout(function () { if (mode === "spot" && scrollT < 0.01) scrollCue.classList.add("on"); }, 400); }
+  function scrollTick() {
+    if (!scrollLive) return;
+    scrollC += (scrollT - scrollC) * 0.14; if (Math.abs(scrollT - scrollC) < 0.0004) scrollC = scrollT;
+    var d = v8.duration || 5;
+    v8.style.opacity = scrollC > 0.002 ? 1 : 0;
+    if (scrollC > 0.002) { s8.seek(Math.min(scrollC * d, d - 0.04)); dirty = true; }
+    if (mode === "spot") scrollCue.classList.toggle("on", scrollT < 0.01);
+    requestAnimationFrame(scrollTick);
+  }
+  function scrollBy(dq) { if (mode !== "spot") return false; scrollT = Math.max(0, Math.min(1, scrollT + dq)); return true; }
+  window.addEventListener("wheel", function (e) {
+    if (mode !== "spot") return;
+    e.preventDefault();
+    var dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * innerHeight : e.deltaY;
+    scrollBy(dy / SCROLL_PX);
+  }, { passive: false, capture: true });
+  window.addEventListener("touchstart", function (e) { touchY = e.touches.length ? e.touches[0].clientY : null; }, { passive: true });
+  window.addEventListener("touchmove", function (e) {
+    if (mode !== "spot" || touchY === null || !e.touches.length) return;
+    e.preventDefault(); var y = e.touches[0].clientY; scrollBy((touchY - y) / (innerHeight * 1.3)); touchY = y;
+  }, { passive: false });
+  window.addEventListener("touchend", function () { touchY = null; }, { passive: true });
+  window.addEventListener("keydown", function (e) {
+    if (mode !== "spot") return;
+    var k = e.key, step = k === "ArrowDown" || k === "ArrowRight" ? 0.1 : k === "ArrowUp" || k === "ArrowLeft" ? -0.1 : k === "PageDown" || k === " " ? 0.25 : k === "PageUp" ? -0.25 : k === "End" ? 1 : k === "Home" ? -1 : 0;
+    if (step) { e.preventDefault(); scrollBy(step); }
+  }, true);
+
   // A window wider than the picture: the strips either side mirror whatever frame is showing, so the sky and sea stay continuous.
   function smear(ctx, src, x, y, W, H, pad) {     // stretch the top and bottom rows outward so the blur has colour to work with at the window's edge
     var sw = src.videoWidth || src.naturalWidth || src.width, sh = src.videoHeight || src.naturalHeight || src.height;
@@ -777,7 +901,7 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
     var w = stage.clientWidth, h = stage.clientHeight, W = IMG_W * S;
     if (OX <= 0.5) { sideL.style.display = sideR.style.display = "none"; return; }
     sideL.style.display = sideR.style.display = "block";
-    var srcEl = atTop ? tower : (mode === "floor" || +v5.style.opacity > 0 ? v5 : mode === "toppl" || mode === "top" ? (+v3.style.opacity > 0 ? v3 : tower) : (T >= D1 ? v2 : v1));
+    var srcEl = atTop ? tower : (+v8.style.opacity > 0 ? v8 : +v6.style.opacity > 0 ? v6 : mode === "floor" || +v5.style.opacity > 0 ? v5 : mode === "toppl" || mode === "top" ? (+v3.style.opacity > 0 ? v3 : tower) : (T >= D1 ? v2 : v1));
     var src = frameFor(srcEl) || tower, plain = srcEl === v5 && P < 0.5;   // the plan: its sides continue the plain background (mirroring would repeat the plan's own walls)
     var dpr = Math.min(window.devicePixelRatio || 1, 2), pad = 40, FP = 100, sw = Math.ceil(OX) + pad + FP + 3;   // strips reach past the window edge and under the picture's faded edge
     [[sideL, -pad, OX + pad, OX + pad], [sideR, OX + W - FP - 3, W + FP + 3, FP + 3 - W]].forEach(function (a) {
@@ -799,24 +923,29 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
   }
 
   function tick() {
-    if (mode !== "hub") [v1, v2, v3, v5].forEach(function (v) { if (+v.style.opacity > 0) frameFor(v); });   // keep each visible clip's last good frame ready, so the strips never appear empty
+    if (mode !== "hub") [v1, v2, v3, v5, v6, v8].forEach(function (v) { if (+v.style.opacity > 0) frameFor(v); });   // keep each visible clip's last good frame ready, so the strips never appear empty
     if (dirty) { drawSides(); dirty = false; }
     requestAnimationFrame(tick);
   }
   stage.addEventListener("click", function (e) {  // the rooftop is the way in
+    if (mode === "roof") {                          // on the corner view, the spot by the fire pit opens the terrace
+      if (e.target && e.target.closest && e.target.closest("button")) return;
+      var rr = stage.getBoundingClientRect(); if (inSpot(e.clientX - rr.left, e.clientY - rr.top)) goSpot();
+      return;
+    }
     if (mode !== "hub") return;
     var r = stage.getBoundingClientRect(), b = find((e.clientX - r.left - OX) / S, (e.clientY - r.top - OY) / S);
     if (b && b.kind === "roof") go();
     else if (b && b.kind === "floor" && b.n === FLOOR_LEVEL) goFloor();
   });
-  backBtn.addEventListener("click", function () { if (mode === "floor") backFloor(); else back(); });
-  window.addEventListener("keydown", function (e) { if (e.key === "Escape") { if (mode === "top") backCorner(); else if (mode === "floor") backFloor(); else back(); } });
+  backBtn.addEventListener("click", function () { if (mode === "floor") backFloor(); else if (mode === "spot") backSpot(); else back(); });
+  window.addEventListener("keydown", function (e) { if (e.key === "Escape") { if (mode === "top") backCorner(); else if (mode === "floor") backFloor(); else if (mode === "spot") backSpot(); else back(); } });
   window.addEventListener("touchstart", function prime() { // iOS only lets a video decode after a touch
-    [v1, v2, v3, v5].forEach(function (v) { var pr = v.play(); if (pr && pr.then) pr.then(function () { v.pause(); }).catch(function () {}); });
+    [v1, v2, v3, v5, v6, v8].forEach(function (v) { var pr = v.play(); if (pr && pr.then) pr.then(function () { v.pause(); }).catch(function () {}); });
     window.removeEventListener("touchstart", prime);
   }, { passive: true, once: true });
   tower.addEventListener("load", function () { dirty = true; });
-  window.__tower = { get progress() { return P; }, get time() { return T; }, get mode() { return mode; }, v1: v1, v2: v2, go: go, back: back, v3: v3, goFloor: goFloor, backFloor: backFloor, v5: v5, goTop: goTop, backCorner: backCorner, setPlan: setPlan, get plan() { return plan; } };
+  window.__tower = { get progress() { return P; }, get time() { return T; }, get mode() { return mode; }, v1: v1, v2: v2, go: go, back: back, v3: v3, goFloor: goFloor, backFloor: backFloor, goSpot: goSpot, backSpot: backSpot, v6: v6, v8: v8, get scroll() { return scrollC; }, get scrollTarget() { return scrollT; }, setScroll: function (q) { scrollT = q; }, get spotIn() { return spotIn; }, v5: v5, goTop: goTop, backCorner: backCorner, setPlan: setPlan, get plan() { return plan; } };
 
   window.addEventListener("resize", layout);
   if (tower.complete) layout(); else tower.addEventListener("load", layout);

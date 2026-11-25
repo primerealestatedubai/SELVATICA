@@ -1,0 +1,837 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Selvática Residences</title>
+<meta name="description" content="Selvática Residences by Privé Real Estate: hover each level of the tower, then open the rooftop amenities or a 3D floor plan.">
+<meta name="theme-color" content="#0b1a28">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=Inter:wght@500;600&family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@400;500&display=swap">
+<style>
+/* Layout: full-bleed elevation of the tower; one glass band follows the pointer from floor to floor.
+   Single committed look (sky + glass), so colors are explicit rather than themed. */
+:root {
+  --ground: #0b1a28;
+  --cream: #f4ead6;
+  --cream-dim: rgba(244, 234, 214, .80);
+  --cream-line: rgba(244, 234, 214, .30);
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-body: "Jost", ui-sans-serif, system-ui, sans-serif;
+  --shade: 6, 11, 19;                             /* the dark gradient colour (r, g, b) */
+  --glass-hi: rgba(240, 244, 249, .46);
+  --glass-mid: rgba(218, 226, 236, .30);
+  --glass-lo: rgba(204, 214, 226, .40);
+  --glass-rim: rgba(255, 255, 255, .55);
+  --chip-bg: rgba(16, 24, 33, .66);
+  --chip-line: rgba(255, 255, 255, .20);
+  --chip-fg: #f4f7fa;
+  --chip-dim: rgba(244, 247, 250, .62);
+  --font-num: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-ui: "Inter", ui-sans-serif, system-ui, sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; margin: 0; overflow: hidden; }
+body { background: var(--ground); color: var(--chip-fg); font-family: var(--font-ui); }
+
+#stage { position: fixed; inset: 0; overflow: hidden; touch-action: manipulation; user-select: none; -webkit-user-select: none; background: var(--ground); }
+.side { position: absolute; top: 0; display: block; pointer-events: none; filter: blur(5px); }
+#tower, .vid { position: absolute; left: 0; top: 0; display: block; max-width: none; }
+.vid { opacity: 0; pointer-events: none; background: transparent; }
+
+/* Glass band */
+#glass {
+  position: absolute; left: 0; top: 0; pointer-events: none; opacity: 0;
+  will-change: transform, width, height, opacity;
+  transition: transform .09s cubic-bezier(.2, .8, .2, 1), height .09s cubic-bezier(.2, .8, .2, 1), width .09s cubic-bezier(.2, .8, .2, 1), opacity .26s ease;
+  background: linear-gradient(180deg, var(--glass-hi) 0%, var(--glass-mid) 46%, var(--glass-lo) 100%);
+  -webkit-backdrop-filter: blur(.6px) saturate(.4) brightness(1.3) contrast(.88);
+  backdrop-filter: blur(.6px) saturate(.4) brightness(1.3) contrast(.88);
+  -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; /* soft-edge mask is set from script */
+}
+#glass.on { opacity: 1; }
+#glass::before { /* soft diagonal sheen */
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(104deg, transparent 30%, rgba(255, 255, 255, .16) 47%, rgba(255, 255, 255, .04) 58%, transparent 70%);
+}
+#glass::after { /* the "tick": a bright rim that fades each time the band changes */
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0;
+  background: rgba(255, 255, 255, .34);
+}
+#glass.tick::after { animation: rim .22s ease-out; }
+@keyframes rim { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+@keyframes roll { 0% { transform: translateY(-38%); opacity: .15; } 100% { transform: none; opacity: 1; } }
+
+#back {
+  position: absolute; right: max(28px, env(safe-area-inset-right, 0px)); top: max(24px, env(safe-area-inset-top, 0px)); z-index: 4;
+  font: 600 12px/1 var(--font-ui); letter-spacing: .14em; text-transform: uppercase; color: var(--chip-fg); cursor: pointer;
+  padding: 11px 16px; border-radius: 999px; background: var(--chip-bg); border: 1px solid var(--chip-line);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2); backdrop-filter: blur(10px) saturate(1.2);
+  opacity: 0; pointer-events: none; transition: opacity .35s ease, background .15s ease;
+}
+#back.on { opacity: 1; pointer-events: auto; }
+#back:hover { background: rgba(16, 24, 33, .82); }
+#back:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* Dark gradient on the left and right edges only: a little deeper on the left (room for the headline and details) */
+#shade {
+  position: absolute; inset: 0; pointer-events: none; transition: opacity .6s ease;
+  background:
+    linear-gradient(90deg, rgba(var(--shade), .60) 0%, rgba(var(--shade), .34) 11%, rgba(var(--shade), .11) 25%, rgba(var(--shade), 0) 40%),
+    linear-gradient(270deg, rgba(var(--shade), .50) 0%, rgba(var(--shade), .25) 9%, rgba(var(--shade), .07) 20%, rgba(var(--shade), 0) 32%);
+}
+#shade.dim { opacity: .5; }
+@media (max-aspect-ratio: 1/1) {                /* portrait: keep the gradient to the edges so it never darkens the building */
+  #shade { background:
+    linear-gradient(90deg, rgba(var(--shade), .52) 0%, rgba(var(--shade), .18) 13%, rgba(var(--shade), 0) 24%),
+    linear-gradient(270deg, rgba(var(--shade), .44) 0%, rgba(var(--shade), .15) 11%, rgba(var(--shade), 0) 22%),
+    linear-gradient(0deg, rgba(var(--shade), .72) 0%, rgba(var(--shade), 0) 24%); }   /* a soft shade behind the bottom menu */
+}
+
+/* Brand, headline block and numbers (all placeholders for copy except the logos) */
+#ui { position: absolute; inset: 0; pointer-events: none; z-index: 3; }   /* above the plan renders (z-index 1 and 2), so the logo is never covered */
+#brand { filter: drop-shadow(0 1px 3px rgba(6, 11, 19, .75)) drop-shadow(0 0 14px rgba(6, 11, 19, .7)); position: absolute; left: clamp(28px, 5.5vw, 96px); top: max(24px, env(safe-area-inset-top, 0px)); width: clamp(84px, 8.5vw, 128px); height: auto; display: block; }
+#intro, #stats { transition: opacity .45s ease, transform .6s ease; }
+#brand { transition: filter .8s ease; }
+#ui.onlight #brand { filter: brightness(.16) saturate(.5) drop-shadow(0 0 10px rgba(255, 255, 255, .55)); }   /* the 3D plan has a light background */
+#ui.hide #intro { opacity: 0; transform: translateY(calc(-58% + 10px)); }
+#ui.hide #stats { opacity: 0; transform: translateY(10px); }
+#intro { position: absolute; left: clamp(28px, 5.5vw, 96px); top: 50%; transform: translateY(-58%); width: clamp(240px, 26vw, 400px); }
+#logo { width: 100%; height: auto; display: block; }
+#lede { margin: clamp(16px, 2.6vh, 28px) 0 0; max-width: 34ch; font: 400 clamp(13px, 1.05vw, 16px)/1.7 var(--font-body); letter-spacing: .01em; color: var(--cream-dim); text-shadow: 0 1px 14px rgba(var(--shade), .55); }
+#stats { position: absolute; left: clamp(28px, 5.5vw, 96px); bottom: max(28px, env(safe-area-inset-bottom, 0px)); margin: 0; padding: 0; list-style: none; display: flex; gap: 0; }
+#stats li { display: flex; flex-direction: column; gap: 9px; padding: 2px clamp(22px, 2.6vw, 44px); border-left: 1px solid var(--cream-line); }
+#stats li:first-child { padding-left: 0; border-left: 0; }
+#stats b { font: 500 clamp(28px, 2.5vw, 40px)/1 var(--font-display); color: var(--cream); font-variant-numeric: lining-nums tabular-nums; text-shadow: 0 1px 14px rgba(var(--shade), .5); }
+#stats span { font: 500 10px/1 var(--font-body); letter-spacing: .22em; text-transform: uppercase; color: var(--cream-dim); }
+@media (max-aspect-ratio: 1/1) {                /* portrait: the tower fills the width, so the headline block stays out of its way */
+  #intro { display: none; }
+  #brand { width: 68px; left: max(18px, env(safe-area-inset-left, 0px)); }
+  #stats { left: max(18px, env(safe-area-inset-left, 0px)); bottom: calc(max(18px, env(safe-area-inset-bottom, 0px)) + 238px); }
+  #stats li { padding: 2px 16px; }
+  #stats b { font-size: 26px; }
+}
+
+/* Level card: right side, vertically centred. Frosted gray glass; the content follows the floor under the pointer. */
+#card {
+  position: absolute; right: clamp(28px, 5.5vw, 96px); top: 50%; transform: translateY(-50%); width: clamp(290px, 23vw, 380px);
+  padding: 22px 22px 16px; border-radius: 16px; color: var(--cream); pointer-events: none;
+  background: linear-gradient(180deg, rgba(92, 100, 112, .44), rgba(54, 60, 71, .38));
+  border: 1px solid rgba(255, 255, 255, .20);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .24), 0 26px 60px rgba(var(--shade), .38);
+  -webkit-backdrop-filter: blur(20px) saturate(.8) brightness(.96); backdrop-filter: blur(20px) saturate(.8) brightness(.96);
+  transition: opacity .45s ease, transform .6s ease;
+}
+#ui.hide #card { opacity: 0; transform: translateY(calc(-50% + 10px)); }
+.c-eyebrow { margin: 0; font: 500 10px/1 var(--font-body); letter-spacing: .24em; text-transform: uppercase; color: var(--cream-dim); }
+.c-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; margin-top: 14px; }
+.c-level { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+#cNum { display: block; font: 500 clamp(58px, 5.2vw, 80px)/.86 var(--font-display); letter-spacing: -.01em; font-variant-numeric: lining-nums tabular-nums; }
+#cNum.tick { animation: roll .16s cubic-bezier(.2, .9, .3, 1); }
+.c-level small { font: 500 12px/1 var(--font-body); letter-spacing: .08em; color: var(--cream-dim); }
+.c-mapwrap { width: clamp(128px, 10.6vw, 170px); flex: none; }
+.c-map { position: relative; aspect-ratio: 1020 / 741; }
+.c-map svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; filter: drop-shadow(0 0 5px rgba(244, 234, 214, .30)); transition: opacity .3s ease; }
+.c-map .none { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; border: 1px dashed var(--cream-line); border-radius: 8px; font: 500 9px/1.4 var(--font-body); letter-spacing: .16em; text-transform: uppercase; color: var(--cream-dim); opacity: 0; transition: opacity .3s ease; }
+.c-map.empty svg { opacity: .10; }
+.c-map.empty .none { opacity: 1; }
+.u path { fill: rgba(244, 234, 214, .22); stroke: rgba(244, 234, 214, .94); stroke-width: 8; stroke-linejoin: round; }
+.u text { fill: var(--cream); font: 600 66px var(--font-display); text-anchor: middle; dominant-baseline: central; }
+.u.un path { fill: url(#hatch); stroke: rgba(244, 234, 214, .36); }
+.u.un text { fill: rgba(244, 234, 214, .42); }
+.c-legend { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; margin-top: 9px; font: 500 8.5px/1 var(--font-body); letter-spacing: .14em; text-transform: uppercase; color: var(--cream-dim); }
+.c-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.sw { display: inline-block; width: 8px; height: 8px; border-radius: 2px; border: 1px solid rgba(244, 234, 214, .9); background: rgba(244, 234, 214, .30); }
+.sw.un { border-color: rgba(244, 234, 214, .4); background: repeating-linear-gradient(135deg, rgba(244, 234, 214, .45) 0 1px, transparent 1px 3px); }
+#cTitle { margin: 20px 0 0; font: 500 clamp(20px, 1.7vw, 25px)/1.15 var(--font-display); letter-spacing: .005em; }
+#cText { margin: 8px 0 0; font: 400 12.5px/1.6 var(--font-body); color: var(--cream-dim); }
+#cRows { margin: 16px 0 0; padding: 0; }
+#cRows div { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid rgba(255, 255, 255, .13); }
+#cRows dt { font: 500 11px/1.3 var(--font-body); letter-spacing: .04em; color: var(--cream-dim); }
+#cRows dd { margin: 0; font: 500 12px/1.3 var(--font-body); color: var(--cream); text-align: right; font-variant-numeric: tabular-nums; }
+.c-foot { display: flex; align-items: center; gap: 8px; margin: 4px 0 0; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, .13); font: 500 10px/1 var(--font-body); letter-spacing: .16em; text-transform: uppercase; color: var(--cream-dim); min-height: 14px; }
+.c-foot i { width: 6px; height: 6px; border-radius: 50%; background: #cfe9c9; box-shadow: 0 0 8px rgba(207, 233, 201, .8); flex: none; }
+.c-foot i.off { display: none; }
+
+/* Back button: a glass pill in the top right once you are on the roof */
+#back {
+  font: 500 11px/1 var(--font-body); letter-spacing: .18em; text-transform: uppercase; color: var(--cream); white-space: nowrap;
+  padding: 13px 20px; border-radius: 999px; cursor: pointer;
+  right: clamp(28px, 5.5vw, 96px); top: calc(max(24px, env(safe-area-inset-top, 0px)) + 7px);
+  background: linear-gradient(180deg, rgba(40, 48, 58, .55), rgba(24, 30, 38, .48));
+  border: 1px solid rgba(255, 255, 255, .30);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .24), 0 6px 20px rgba(var(--shade), .22);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
+  transition: background .2s ease, border-color .2s ease, opacity .35s ease;
+}
+#back:hover { background: linear-gradient(180deg, rgba(255, 255, 255, .32), rgba(255, 255, 255, .15)); border-color: rgba(255, 255, 255, .52); }
+#back:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+@media (max-width: 560px) {
+  #back { right: max(18px, env(safe-area-inset-right, 0px)); top: calc(max(24px, env(safe-area-inset-top, 0px)) + 4px); padding: 10px 13px; font-size: 10px; letter-spacing: .14em; }
+}
+@media (max-height: 720px) and (min-aspect-ratio: 1/1) { #cText { display: none; } #cRows { margin-top: 12px; } #cRows div { padding: 7px 0; } #card { padding: 18px 20px 14px; } #cTitle { margin-top: 14px; } }
+@media (max-aspect-ratio: 1/1) {                /* portrait: the tower fills the width, so the card becomes a compact strip along the bottom */
+  #card { top: auto; bottom: max(18px, env(safe-area-inset-bottom, 0px)); left: max(18px, env(safe-area-inset-left, 0px)); right: max(18px, env(safe-area-inset-right, 0px)); width: auto; transform: none; padding: 14px 16px 12px; border-radius: 14px; }
+  #ui.hide #card { transform: translateY(10px); }
+  #cText, #cRows { display: none; }
+  .c-head { margin-top: 10px; }
+  #cNum { font-size: 52px; }
+  .c-mapwrap { width: 112px; }
+  #cTitle { margin-top: 12px; font-size: 19px; }
+  .c-foot { margin-top: 10px; padding-top: 10px; }
+}
+
+/* Top view: the plan renders, hover areas, the area label, the CTA and the Main floor / Top floor switch */
+.plan { position: absolute; left: 0; top: 0; max-width: none; display: block; opacity: 0; pointer-events: none; transition: opacity .9s cubic-bezier(.4, 0, .2, 1); }
+.plan.on { opacity: 1; }
+#planTop { z-index: 1; }
+#areas { position: absolute; left: 0; top: 0; z-index: 2; pointer-events: none; opacity: 0; transition: opacity .4s ease; overflow: visible; }
+#areas.on { opacity: 1; }
+.area { fill: #cfd6de; fill-opacity: 0; transition: fill-opacity .35s ease; }
+.area.hot { fill-opacity: .26; }                 /* a very light wash: the plan stays clearly visible */
+#tip {
+  position: absolute; left: 0; top: 0; z-index: 6; pointer-events: none; opacity: 0; display: flex; align-items: baseline; gap: 10px; padding: 10px 16px 11px; border-radius: 12px; color: var(--cream);
+  background: linear-gradient(180deg, rgba(40, 48, 58, .62), rgba(24, 30, 38, .56)); border: 1px solid rgba(255, 255, 255, .26);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 10px 28px rgba(var(--shade), .34);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
+  transition: opacity .18s ease; will-change: transform;
+}
+#tip.on { opacity: 1; }
+#tip .n { font: 500 11px/1 var(--font-body); letter-spacing: .14em; color: var(--cream-dim); font-variant-numeric: tabular-nums; }
+#tip .t { font: 500 20px/1 var(--font-display); letter-spacing: .01em; white-space: nowrap; }
+#shade.dim.dimmer { opacity: .2; }
+
+#cta {
+  position: absolute; left: 50%; bottom: max(30px, env(safe-area-inset-bottom, 0px)); z-index: 4; transform: translate(-50%, 12px); opacity: 0; pointer-events: none;
+  font: 500 12px/1 var(--font-body); letter-spacing: .22em; text-transform: uppercase; color: var(--cream); white-space: nowrap; cursor: pointer;
+  padding: 16px 30px; border-radius: 999px;
+  background: linear-gradient(180deg, rgba(40, 48, 58, .60), rgba(24, 30, 38, .54)); border: 1px solid rgba(255, 255, 255, .30);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .24), 0 10px 30px rgba(var(--shade), .32);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
+  transition: opacity .45s ease, transform .55s cubic-bezier(.2, .8, .2, 1), background .2s ease, border-color .2s ease;
+}
+#cta.on { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+#cta:hover { background: linear-gradient(180deg, rgba(58, 68, 80, .72), rgba(34, 42, 52, .66)); border-color: rgba(255, 255, 255, .55); }
+#cta:focus-visible, #floorsw button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+#floorsw {
+  position: absolute; left: 50%; top: calc(max(24px, env(safe-area-inset-top, 0px)) + 4px); z-index: 4; transform: translate(-50%, -10px); opacity: 0; pointer-events: none;
+  display: flex; padding: 4px; border-radius: 999px;
+  background: linear-gradient(180deg, rgba(40, 48, 58, .58), rgba(24, 30, 38, .52)); border: 1px solid rgba(255, 255, 255, .26);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 8px 26px rgba(var(--shade), .30);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
+  transition: opacity .45s ease, transform .55s cubic-bezier(.2, .8, .2, 1);
+}
+#floorsw.on { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+#floorsw .thumb { position: absolute; left: 4px; top: 4px; bottom: 4px; width: calc(50% - 4px); border-radius: 999px; background: linear-gradient(180deg, rgba(255, 255, 255, .34), rgba(255, 255, 255, .16)); box-shadow: 0 2px 10px rgba(var(--shade), .26), inset 0 1px 0 rgba(255, 255, 255, .45); transition: transform .65s cubic-bezier(.65, 0, .2, 1); }
+#floorsw[data-p="top"] .thumb { transform: translateX(100%); }
+#floorsw button { position: relative; z-index: 1; min-width: 124px; padding: 12px 22px; background: none; border: 0; border-radius: 999px; cursor: pointer; font: 500 11px/1 var(--font-body); letter-spacing: .18em; text-transform: uppercase; color: var(--cream-dim); transition: color .4s ease; }
+#floorsw button[aria-selected="true"] { color: var(--cream); }
+#floorsw button:hover { color: var(--cream); }
+@media (max-width: 560px) {
+  #floorsw { top: calc(max(24px, env(safe-area-inset-top, 0px)) + 52px); }
+  #floorsw button { min-width: 104px; padding: 11px 16px; font-size: 10px; letter-spacing: .14em; }
+  #cta { padding: 14px 22px; font-size: 11px; letter-spacing: .18em; }
+}
+
+/* ?grid shows every floor band, to check alignment */
+.gridline { position: absolute; pointer-events: none; border: 1px solid rgba(255, 60, 60, .8); box-sizing: border-box; font: 600 9px/1 var(--font-ui); color: #fff; }
+
+@media (prefers-reduced-motion: reduce) {
+  #glass { transition: opacity .1s linear; }
+  #glass.tick::after, #cNum.tick { animation: none; }
+}
+</style>
+</head>
+<body>
+<div id="stage" aria-label="Interactive tower elevation">
+  <canvas id="sideL" class="side" aria-hidden="true"></canvas><canvas id="sideR" class="side" aria-hidden="true"></canvas>
+  <img id="tower" src="building.webp" alt="Elevation of the tower with balconies facing the sea" draggable="false">
+  <video id="v1" class="vid" src="stage1.mp4" muted playsinline preload="auto" aria-hidden="true"></video>
+  <video id="v2" class="vid" src="stage2.mp4" muted playsinline preload="auto" aria-hidden="true"></video>
+  <video id="v3" class="vid" src="stage3.mp4" muted playsinline preload="auto" aria-hidden="true"></video>
+  <video id="v5" class="vid" src="stage6.mp4" muted playsinline preload="metadata" aria-hidden="true"></video>
+  <img id="planMain" class="plan" src="plan_main.webp" alt="Main floor of the rooftop amenities, seen from above" draggable="false">
+  <img id="planTop" class="plan" src="plan_top.webp" alt="Top floor of the rooftop amenities, seen from above" draggable="false">
+  <svg id="areas" viewBox="0 0 1670 942" preserveAspectRatio="none" aria-hidden="true"><defs><filter id="soft" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="7"/></filter></defs><g id="areaG"></g></svg>
+  <div id="shade" aria-hidden="true"></div>
+  <div id="ui">
+    <img id="brand" src="logo_prive.png" alt="Privé Real Estate" draggable="false">
+    <aside id="card" aria-live="polite">
+      <p class="c-eyebrow" id="cLabel">Residential level</p>
+      <div class="c-head">
+        <div class="c-level"><b id="cNum">&ndash;&ndash;</b><small>/33</small></div>
+        <div class="c-mapwrap">
+          <div class="c-map empty" id="cMap"><div class="none">Plan to follow</div></div>
+          <div class="c-legend"><span><i class="sw"></i>Available</span><span><i class="sw un"></i>Unavailable</span></div>
+        </div>
+      </div>
+      <h3 id="cTitle">Select a level</h3>
+      <p id="cText">Move over the tower to see each level, its floor plan and which homes are available.</p>
+      <dl id="cRows"></dl>
+      <p class="c-foot" id="cFoot"><i class="off"></i><span></span></p>
+    </aside>
+    <section id="intro">
+      <img id="logo" src="logo_selvatica.png" alt="Selvática Residences" draggable="false">
+      <p id="lede">Thirty-seven levels rising above the coast, every residence turned toward the sea. At the very top, the roof opens to pools, gardens and lounges above the canopy.</p>
+    </section>
+    <ul id="stats" aria-label="The tower in numbers">
+      <li><b>37</b><span>Levels</span></li>
+      <li><b>432</b><span>Units</span></li>
+      <li><b>47</b><span>Amenities</span></li>
+    </ul>
+  </div>
+  <div id="glass"></div>
+  <button id="back" type="button" aria-label="Back to the building">← Back</button>
+  <button id="cta" type="button">Show top view</button>
+  <div id="floorsw" data-p="main" role="tablist" aria-label="Level">
+    <i class="thumb"></i>
+    <button type="button" role="tab" data-p="main" aria-selected="true">Main floor</button>
+    <button type="button" role="tab" data-p="top" aria-selected="false">Top floor</button>
+  </div>
+  <div id="tip" aria-hidden="true"><span class="n"></span><span class="t"></span></div>
+</div>
+
+<script>
+(function () {
+  // Floor model, in source-image pixels (1672 x 941). Tune these numbers if the grid ever needs shifting.
+  var IMG_W = 1672, IMG_H = 941;
+  var TOP = 66, PITCH = 23.78, COUNT = 32;       // slab line of the top floor, floor height, number of floors
+  var X0 = 737, X1 = 993;                         // tower width at the balcony slabs
+  var PODIUM_FROM = 27, PODIUM_X0 = 763;          // the lowest floors start right of the concrete block
+  var PAD = 7, FEATHER = 11;                      // glow spill beyond the floor, and fade length (image pixels)
+  var ROOF = { y0: 27, y1: TOP, leftY: 45, split: 843 };  // stepped silhouette of the rooftop amenities
+
+  var bands = [], k;
+  for (k = 0; k < COUNT; k++) {
+    bands.push({ kind: "floor", n: COUNT - k, x0: k >= PODIUM_FROM ? PODIUM_X0 : X0, x1: X1, y0: TOP + k * PITCH, y1: TOP + (k + 1) * PITCH });
+  }
+  var roof = { kind: "roof", n: "Roof", x0: X0, x1: X1, y0: ROOF.y0, y1: ROOF.y1 };
+
+  function find(ix, iy) {
+    if (iy < ROOF.y0 || iy >= TOP + COUNT * PITCH) return null;
+    if (iy < TOP) {
+      if (ix >= ROOF.split && ix <= X1) return roof;
+      if (ix >= X0 && ix < ROOF.split && iy >= ROOF.leftY) return roof;
+      return null;
+    }
+    if (ix < X0 || ix > X1) return null;
+    var b = bands[Math.floor((iy - TOP) / PITCH)];
+    return b && ix >= b.x0 ? b : null;
+  }
+
+  var stage = document.getElementById("stage"), tower = document.getElementById("tower");
+  var v5 = document.getElementById("v5"), v3 = document.getElementById("v3"), planMain = document.getElementById("planMain"), planTop = document.getElementById("planTop"), areasSvg = document.getElementById("areas");
+  var v1 = document.getElementById("v1"), v2 = document.getElementById("v2"), sideL = document.getElementById("sideL"), sideR = document.getElementById("sideR");
+  var glass = document.getElementById("glass");
+  var S = 1, OX = 0, OY = 0, current = null, lastX = 0, lastY = 0, raf = 0, lastBuzz = 0;
+
+  function layout() {
+    var w = stage.clientWidth, h = stage.clientHeight;
+    setScale(P);
+    if (current) place(current, true);
+    drawGrid(); dirty = true;
+  }
+
+  // At rest the whole tower is in view (full height). As the scroll starts, the picture eases to fill the window width,
+  // so a wide window never shows empty strips while the video plays.
+  function setScale(p) {
+    var w = stage.clientWidth, h = stage.clientHeight, fit = h / IMG_H, cover = Math.max(w / IMG_W, h / IMG_H);
+    var k = Math.max(0, Math.min(1, p / 0.25)); k = k * k * (3 - 2 * k);
+    S = fit + (cover - fit) * k;
+    OX = (w - IMG_W * S) / 2;
+    OY = -(IMG_H * S - h) * 0.5 * k;
+    var F = OX > 2 ? Math.min(90, OX * 0.9) : 0;     // the picture's edges fade softly into the blurred sky/sea beside it
+    var fade = F ? "linear-gradient(to right, transparent 0, #000 " + F + "px, #000 calc(100% - " + F + "px), transparent 100%)" : "none";
+    [tower, v1, v2].forEach(function (el) { el.style.webkitMaskImage = fade; el.style.maskImage = fade; });                // top-anchored at rest, centred once the camera has risen
+    tower.style.width = IMG_W * S + "px"; tower.style.height = IMG_H * S + "px";
+    tower.style.left = OX + "px"; tower.style.top = OY + "px";
+    [v1, v2, v3, v5, planMain, planTop, areasSvg].forEach(function (v) { v.style.width = IMG_W * S + "px"; v.style.height = IMG_H * S + "px"; v.style.left = OX + "px"; v.style.top = OY + "px"; });
+  }
+
+  function place(b, instant) {
+    // The box is a little bigger than the floor so the light spills past the slab lines and fades out.
+    var P = PAD * S, x = OX + b.x0 * S - P, y = OY + b.y0 * S - P, w = (b.x1 - b.x0) * S + 2 * P, h = (b.y1 - b.y0) * S + 2 * P;
+    if (instant) { glass.style.transition = "none"; }
+    glass.style.transform = "translate(" + x + "px," + y + "px)";
+    glass.style.width = w + "px"; glass.style.height = h + "px";
+    var poly = [[0, 0], [w, 0], [w, h], [0, h]];
+    if (b.kind === "roof") {
+      var sx = (ROOF.split - b.x0) * S, ly = (ROOF.leftY - b.y0) * S;
+      poly = [[0, ly], [sx, ly], [sx, 0], [w, 0], [w, h], [0, h]];
+    }
+    var m = "url(" + softMask(poly, w, h, FEATHER * S) + ")";
+    glass.style.webkitMaskImage = m; glass.style.maskImage = m;
+    if (instant) { void glass.offsetWidth; glass.style.transition = ""; }
+  }
+
+  // Builds an alpha mask that is 0 at the shape's edge and eases up to 1 over `f` pixels inward, so no edge is ever visible.
+  var maskCache = {};
+  function softMask(poly, w, h, f) {
+    var key = poly.map(function (p) { return Math.round(p[0]) + "," + Math.round(p[1]); }).join(";") + "|" + Math.round(w) + "x" + Math.round(h) + "|" + Math.round(f);
+    if (maskCache[key]) return maskCache[key];
+    var cw = Math.max(2, Math.round(w)), ch = Math.max(2, Math.round(h)), c = document.createElement("canvas");
+    c.width = cw; c.height = ch;
+    var ctx = c.getContext("2d"), img = ctx.createImageData(cw, ch), n = poly.length, i, j, e;
+    for (j = 0; j < ch; j++) for (i = 0; i < cw; i++) {
+      var px = (i + .5) * w / cw, py = (j + .5) * h / ch, inside = false, d = 1e9;
+      for (e = 0; e < n; e++) {
+        var a = poly[e], b2 = poly[(e + 1) % n], dx = b2[0] - a[0], dy = b2[1] - a[1];
+        if ((a[1] > py) !== (b2[1] > py) && px < a[0] + (py - a[1]) / dy * dx) inside = !inside;
+        var t = Math.max(0, Math.min(1, ((px - a[0]) * dx + (py - a[1]) * dy) / (dx * dx + dy * dy)));
+        var ex = a[0] + t * dx - px, ey = a[1] + t * dy - py, dd = Math.sqrt(ex * ex + ey * ey);
+        if (dd < d) d = dd;
+      }
+      var u = inside ? Math.min(1, d / f) : 0, al = u * u * (3 - 2 * u), o = (j * cw + i) * 4;
+      img.data[o] = img.data[o + 1] = img.data[o + 2] = 255; img.data[o + 3] = Math.round(al * 255);
+    }
+    ctx.putImageData(img, 0, 0);
+    return (maskCache[key] = c.toDataURL("image/png"));
+  }
+
+  function buzz() { // vibration only exists on some phones (Android Chrome); desktop and iOS ignore it
+    var now = Date.now();
+    if (now - lastBuzz < 40) return; lastBuzz = now;
+    try { if (navigator.vibrate) navigator.vibrate(6); } catch (e) {}
+  }
+
+  // ---- The level card: shows whichever level was last under the pointer ----
+  var FLOOR_LEVEL = 30;                            // the level that opens its 3D plan when clicked
+  var ROOF_LEVEL = 33, PLAN_FROM = 6, PLAN_TO = 32, UNIT_COUNT = 9;   // the plan below is shared by levels 6 to 32
+  var TIERS = [                                    // placeholder copy and figures, to be refined
+    { from: 6,  to: 14, name: "Canopy Residences",  text: "Homes level with the tree line, wrapped in planted terraces.",           interior: "64 – 118 m²", beds: "1 – 3" },
+    { from: 15, to: 24, name: "Coastal Residences", text: "Open sea views from every living room, with deep shaded balconies.",     interior: "72 – 132 m²", beds: "1 – 4" },
+    { from: 25, to: 32, name: "Horizon Residences", text: "The highest homes in the tower, high above the coast line and canopy.", interior: "86 – 164 m²", beds: "2 – 4" }
+  ];
+  var PLAN = {"vb":[230,82,1020,741],"units":{"1":{"d":"M1182 450 L1200 450 L1217 457 L1229 468 L1237 484 L1237 529 L1224 547 L1224 712 L1238 737 L1237 783 L1223 803 L1204 811 L1068 811 L1059 805 L1059 468 L1062 465 L1153 465 Z","c":[1144,644]},"2":{"d":"M847 629 L1056 629 L1059 632 L1059 797 L1056 800 L1052 797 L848 797 L844 793 L844 632 Z","c":[954,710]},"3":{"d":"M637 629 L841 629 L844 632 L844 793 L840 797 L638 797 L634 793 L634 632 Z","c":[740,710]},"4":{"d":"M722 455 L785 455 L802 465 L1002 465 L1005 468 L1005 593 L1002 596 L721 596 L718 593 L718 459 Z","c":[866,531]},"5":{"d":"M432 629 L631 629 L634 632 L633 794 L630 797 L432 797 L429 794 L429 632 Z","c":[531,710]},"6":{"d":"M259 591 L403 591 L406 594 L406 629 L425 629 L428 632 L428 793 L424 797 L392 797 L382 808 L374 811 L281 811 L261 804 L249 792 L242 773 L242 680 L247 666 L256 655 L256 594 Z","c":[341,710]},"7":{"d":"M272 258 L403 258 L406 261 L406 587 L403 590 L259 590 L256 587 L256 262 Z","c":[340,422]},"8":{"d":"M286 94 L541 94 L559 100 L570 111 L576 126 L576 254 L571 267 L561 278 L442 278 L441 288 L437 291 L417 265 L414 265 L414 302 L410 305 L407 302 L407 258 L259 258 L256 255 L256 226 L247 218 L242 206 L242 132 L248 117 L261 103 Z","c":[410,174]},"9":{"d":"M446 279 L558 279 L561 282 L561 474 L558 477 L446 477 L443 474 L443 282 Z","c":[503,376]}}};   // unit outlines traced from the floor plan, in plan pixels
+  var unavailable = {};                            // level -> unit numbers that are NOT available; loaded from availability.json
+  var cNum = document.getElementById("cNum"), cLabel = document.getElementById("cLabel"), cTitle = document.getElementById("cTitle"), cText = document.getElementById("cText");
+  var cRows = document.getElementById("cRows"), cMap = document.getElementById("cMap"), cFoot = document.getElementById("cFoot");
+  var shownBand = null, planSvg = null;
+
+  function buildPlan() {                           // one SVG for the whole plan; availability only toggles a class on each unit
+    var ns = "http://www.w3.org/2000/svg", svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("viewBox", PLAN.vb.join(" ")); svg.setAttribute("role", "img"); svg.setAttribute("aria-label", "Floor plan");
+    var defs = '<defs><pattern id="hatch" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">' +
+      '<rect width="22" height="22" fill="rgba(110,118,130,.30)"/><rect width="5" height="22" fill="rgba(244,234,214,.34)"/></pattern></defs>';
+    var g = Object.keys(PLAN.units).sort(function (a, b) { return a - b; }).map(function (id) {
+      var u = PLAN.units[id];
+      return '<g class="u" data-u="' + id + '"><path d="' + u.d + '"/><text x="' + u.c[0] + '" y="' + u.c[1] + '">' + id + '</text><title>Unit ' + id + '</title></g>';
+    }).join("");
+    svg.innerHTML = defs + g; cMap.insertBefore(svg, cMap.firstChild); planSvg = svg;
+  }
+
+  function levelInfo(b) {
+    var n = b.kind === "roof" ? ROOF_LEVEL : b.n, elev = "+" + (4.5 + (n - 1) * 3.2).toFixed(1) + " m";
+    if (b.kind === "roof") return { n: n, label: "Rooftop level", title: "Rooftop Amenities", text: "Infinity pools, a sky lounge and gardens above the canopy.",
+      rows: [["Elevation", elev], ["Amenities", "12 spaces"], ["Pools", "2 infinity"], ["Hours", "06:00 – 23:00"], ["Access", "Residents"]], plan: false, foot: "Click the rooftop to explore" };
+    if (n < PLAN_FROM) return { n: n, label: "Podium level", title: "Podium Level", text: "Planted terraces and shared spaces at the base of the tower.",
+      rows: [["Elevation", elev], ["Use", "Shared spaces"], ["Terraces", "Planted"], ["Access", "Residents"], ["Floor plan", "To follow"]], plan: false, foot: "Floor plan to follow" };
+    var t = TIERS.filter(function (x) { return n >= x.from && n <= x.to; })[0] || TIERS[TIERS.length - 1];
+    return { n: n, label: "Residential level", title: t.name, text: t.text, plan: true, foot: n === FLOOR_LEVEL ? "Click the level to see its plan" : null,
+      rows: [["Elevation", elev], ["Residences", UNIT_COUNT + " per level"], ["Interior", t.interior], ["Bedrooms", t.beds], ["Price from", "AED " + (1.35 + 0.045 * n).toFixed(2) + "M"]] };
+  }
+
+  function renderCard(b) {
+    shownBand = b;
+    var info = levelInfo(b), off = unavailable[info.n] || [], free = UNIT_COUNT - off.length;
+    cLabel.textContent = info.label; cNum.textContent = (info.n < 10 ? "0" : "") + info.n;
+    cTitle.textContent = info.title; cText.textContent = info.text;
+    cRows.innerHTML = info.rows.map(function (r) { return "<div><dt>" + r[0] + "</dt><dd>" + r[1] + "</dd></div>"; }).join("");
+    cMap.classList.toggle("empty", !info.plan);
+    if (planSvg) [].forEach.call(planSvg.querySelectorAll(".u"), function (g) {
+      var id = +g.getAttribute("data-u"), un = info.plan && off.indexOf(id) >= 0;
+      g.classList.toggle("un", un); g.querySelector("title").textContent = "Unit " + id + (info.plan ? (un ? " · Unavailable" : " · Available") : "");
+    });
+    var dot = cFoot.querySelector("i"), label = cFoot.querySelector("span");
+    if (info.plan) { dot.className = ""; label.textContent = free + " of " + UNIT_COUNT + " available" + (info.foot ? "  \u00B7  click to open" : ""); }
+    else { dot.className = "off"; label.textContent = info.foot; }
+    cNum.classList.remove("tick"); void cNum.offsetWidth; cNum.classList.add("tick");
+  }
+
+  function setBand(b) {
+    if (b === current) return;
+    var first = !current;
+    current = b;
+    stage.style.cursor = b && (b.kind === "roof" || (b.kind === "floor" && b.n === FLOOR_LEVEL)) ? "pointer" : "default";
+    if (!b) { glass.classList.remove("on"); return; }     // the card keeps the last level so it can be read
+    place(b, first);
+    glass.classList.add("on");
+    renderCard(b);
+    glass.classList.remove("tick"); void glass.offsetWidth; glass.classList.add("tick");
+    buzz();
+  }
+
+  buildPlan();
+  var DEFAULT_LEVEL = 7;                           // the level the card shows before anything is hovered
+  renderCard(bands[COUNT - DEFAULT_LEVEL]);
+  fetch("availability.json").then(function (r) { return r.json(); }).then(function (j) {   // edit availability.json to change which units are available
+    unavailable = j.unavailable || {}; if (shownBand) renderCard(shownBand);
+  }).catch(function () {});
+
+  function onPoint(e) {
+    if (mode === "top") { topHover(e); return; }
+    if (!atTop) return;
+    var r = stage.getBoundingClientRect();
+    lastX = e.clientX - r.left; lastY = e.clientY - r.top;
+    setBand(find((lastX - OX) / S, (lastY - OY) / S));
+  }
+
+  stage.addEventListener("pointermove", onPoint);
+  stage.addEventListener("pointerdown", onPoint);
+  stage.addEventListener("pointerleave", function (e) { if (e.pointerType === "mouse") { setBand(null); if (mode === "top") setHot(null); } });
+  stage.addEventListener("pointerup", function (e) { if (e.pointerType !== "mouse") setTimeout(function () { setBand(null); if (mode === "top") setHot(null); }, 1400); });
+
+  function drawGrid() {
+    var old = stage.querySelectorAll(".gridline"), i;
+    for (i = 0; i < old.length; i++) old[i].remove();
+    if (location.search.indexOf("grid") < 0) return;
+    bands.concat([roof]).forEach(function (b) {
+      var d = document.createElement("div"); d.className = "gridline";
+      d.style.left = OX + b.x0 * S + "px"; d.style.top = OY + b.y0 * S + "px";
+      d.style.width = (b.x1 - b.x0) * S + "px"; d.style.height = (b.y1 - b.y0) * S + "px";
+      d.textContent = b.n; stage.appendChild(d);
+    });
+  }
+
+
+  // ---- Click the rooftop: clip 1 then clip 2 play as one continuous motion; Back plays it in reverse ----
+  var D1 = 3.0, TOTAL = 6.0, RATE = 3.2;          // seconds per clip (clip 2 frame 0 is clip 1's last frame); playback speed (1 = natural, 6 s in total; 3.2 = about 1.9 s)
+  var mode = "hub", atTop = true, dirty = true, T = 0, P = 0, token = 0, scrubbing = false;
+  var backBtn = document.getElementById("back"), shade = document.getElementById("shade"), ui = document.getElementById("ui");
+  var fixedAt = (location.search.match(/[?&]at=([0-9.]+)/) || [])[1];
+
+  function Scrubber(el) {                         // used for the reverse run: never queues seeks, one at a time
+    var self = this; this.seeking = false; this.want = 0;
+    el.addEventListener("seeked", function () { self.seeking = false; dirty = true; if (scrubbing && Math.abs(el.currentTime - self.want) > 1 / 48) self.go(); });
+    el.addEventListener("loadeddata", function () { dirty = true; });
+    this.go = function () {
+      var d = el.duration || 3.04, t = Math.max(0, Math.min(self.want, d - 0.02));
+      if (self.seeking || Math.abs(el.currentTime - t) < 1 / 60) return;
+      self.seeking = true; el.currentTime = t;
+    };
+    this.seek = function (t) { self.want = t; self.go(); };
+  }
+  var s1 = new Scrubber(v1), s2 = new Scrubber(v2);
+
+  function seekTo(el, t) {                        // resolves once the video really shows time t
+    return new Promise(function (res) {
+      if (Math.abs(el.currentTime - t) < 0.001 && !el.seeking) return res();
+      var f = function () { el.removeEventListener("seeked", f); res(); };
+      el.addEventListener("seeked", f); el.currentTime = t;
+    });
+  }
+
+  // Lay out the picture, the two clips and the side strips for progress p (0 = whole tower, 1 = rooftop corner view).
+  function show(p) {
+    P = p; T = p * TOTAL; setScale(p);
+    v1.style.opacity = p > 0.0005 ? 1 : 0;
+    v2.style.opacity = T >= D1 ? 1 : 0;
+    dirty = true;
+  }
+
+  function go() {                                 // forward: native playback, clip 1 then clip 2
+    if (mode !== "hub") return;
+    mode = "play"; atTop = false; var my = ++token;
+    setBand(null); shade.classList.add("dim"); ui.classList.add("hide");
+    v1.pause(); v2.pause(); v1.playbackRate = v2.playbackRate = RATE;
+    Promise.all([seekTo(v1, 0), seekTo(v2, 0)]).then(function () {
+      if (my !== token) return;
+      v1.style.opacity = 1; var pr = v1.play(); if (pr && pr.catch) pr.catch(function () {});
+      (function loop1() {
+        if (my !== token) return;
+        if (v1.currentTime < D1 - 0.02 && !v1.ended) { show(v1.currentTime / TOTAL); requestAnimationFrame(loop1); return; }
+        v1.pause(); show(D1 / TOTAL);             // hand over: clip 2 frame 0 is the same picture as clip 1's last frame
+        var pr2 = v2.play(); if (pr2 && pr2.catch) pr2.catch(function () {});
+        (function loop2() {
+          if (my !== token) return;
+          if (v2.currentTime < D1 - 0.02 && !v2.ended) { show((D1 + v2.currentTime) / TOTAL); requestAnimationFrame(loop2); return; }
+          v2.pause(); show(1); mode = "roof"; backBtn.classList.add("on"); showCta("Show top view");
+        })();
+      })();
+    });
+  }
+
+  function back() {                               // reverse: step the clips backwards, rooftop view to whole tower
+    if (mode !== "roof") return;
+    mode = "play"; var my = ++token, uiBack = false; scrubbing = true; backBtn.classList.remove("on"); cta.classList.remove("on");
+    v1.pause(); v2.pause();
+    var t0 = performance.now();
+    (function loop(now) {
+      if (my !== token) return;
+      var t = Math.max(0, TOTAL - (now - t0) / 1000 * RATE);
+      show(t / TOTAL); s1.seek(Math.min(t, D1)); s2.seek(Math.max(0, t - D1));
+      if (t < D1 * 0.5 && !uiBack) { uiBack = true; shade.classList.remove("dim"); ui.classList.remove("hide"); }   // the gradient and text ease in during the last stretch, not after it
+      if (t > 0) { requestAnimationFrame(loop); return; }
+      Promise.all([seekTo(v1, 0), seekTo(v2, 0)]).then(function () {
+        if (my !== token) return;
+        scrubbing = false; mode = "hub"; atTop = true; show(0); shade.classList.remove("dim"); ui.classList.remove("hide");
+      });
+    })(t0);
+  }
+
+  // ---- Top view: the corner view tips straight down onto the plan; Main floor / Top floor cross-fade; areas light up on hover ----
+  var REGIONS = {"main":[{"id":1,"name":"Pool","pts":[[268,150],[570,150],[570,366],[268,366]]},{"id":2,"name":"Terrace","pts":[[262,368],[572,368],[572,398],[500,398],[500,745],[262,745]]},{"id":3,"name":"Pilates Room","pts":[[500,573],[652,573],[652,732],[500,732]]},{"id":4,"name":"Gym","pts":[[652,573],[1050,573],[1050,732],[652,732]]},{"id":5,"name":"Yoga Rooms","pts":[[1050,573],[1177,573],[1177,732],[1050,732]]},{"id":6,"name":"Beauty Room","pts":[[1177,573],[1242,573],[1242,732],[1177,732]]},{"id":7,"name":"Wellness Center","pts":[[1224,400],[1390,400],[1390,742],[1242,742],[1242,573],[1224,573]]}],"top":[{"id":1,"name":"BBQ Area","pts":[[455,530],[800,530],[800,712],[455,712]]},{"id":2,"name":"Firepit","pts":[[806,500],[925,500],[925,605],[980,605],[980,700],[806,700]]},{"id":3,"name":"Pool","pts":[[983,605],[1378,605],[1378,697],[983,697]]},{"id":4,"name":"Solarium","pts":[[805,372],[1395,372],[1395,605],[925,605],[925,500],[805,500]]}]};   // hover areas, in plan pixels (1670 x 942), named from the labelled plans
+  var V3_END = "top";                              // the transition clip lands on the top-level plan, and the top floor stays as the first plan shown
+  var RATE3 = RATE * 0.75, PLAN_W = 1670, PLAN_H = 942;
+  var FADE_IN = "opacity .6s cubic-bezier(.4, 0, .2, 1)";   // the plan's fade into and out of the video
+  var cta = document.getElementById("cta"), floorsw = document.getElementById("floorsw"), tip = document.getElementById("tip"), areaG = document.getElementById("areaG");
+  var s3 = new Scrubber(v3), plan = "main", hotArea = null, groups = {}, tipX = 0, tipY = 0, tipRaf = 0;
+
+  (function buildAreas() {
+    var NS = "http://www.w3.org/2000/svg";
+    ["main", "top"].forEach(function (k) {
+      var g = document.createElementNS(NS, "g"); g.style.display = k === "main" ? "" : "none";
+      REGIONS[k].forEach(function (r) {
+        var poly = document.createElementNS(NS, "polygon");
+        poly.setAttribute("points", r.pts.map(function (q) { return q.join(","); }).join(" ")); poly.setAttribute("class", "area"); r.el = poly; g.appendChild(poly);
+      });
+      areaG.appendChild(g); groups[k] = g;
+    });
+    areaG.setAttribute("filter", "url(#soft)");   // soft edges: no outline on a highlighted area
+  })();
+
+  function inPoly(x, y, pts) {
+    var c = false;
+    for (var i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+      var a = pts[i], b = pts[j];
+      if ((a[1] > y) !== (b[1] > y) && x < (b[0] - a[0]) * (y - a[1]) / (b[1] - a[1]) + a[0]) c = !c;
+    }
+    return c;
+  }
+  function areaAt(x, y) { var L = REGIONS[plan]; for (var i = 0; i < L.length; i++) if (inPoly(x, y, L[i].pts)) return L[i]; return null; }
+
+  function moveTip() {
+    tipRaf = 0;
+    var w = stage.clientWidth, h = stage.clientHeight, tw = tip.offsetWidth, th = tip.offsetHeight, x = tipX + 22, y = tipY + 22;
+    if (x + tw > w - 10) x = tipX - tw - 22;
+    if (y + th > h - 10) y = tipY - th - 22;
+    tip.style.transform = "translate(" + Math.max(10, x) + "px," + Math.max(10, y) + "px)";
+  }
+  function setHot(a) {
+    if (a === hotArea) return;
+    if (hotArea) hotArea.el.classList.remove("hot");
+    hotArea = a;
+    if (!a) { tip.classList.remove("on"); stage.style.cursor = "default"; return; }
+    a.el.classList.add("hot");
+    tip.querySelector(".n").textContent = (a.id < 10 ? "0" : "") + a.id; tip.querySelector(".t").textContent = a.name;
+    tip.classList.add("on");
+  }
+  function topHover(e) {
+    var r = stage.getBoundingClientRect(); tipX = e.clientX - r.left; tipY = e.clientY - r.top;
+    var onUi = e.target && e.target.closest && e.target.closest("button");
+    var a = onUi ? null : areaAt((tipX - OX) / S * (PLAN_W / IMG_W), (tipY - OY) / S * (PLAN_H / IMG_H));
+    setHot(a);
+    if (a && !tipRaf) tipRaf = requestAnimationFrame(moveTip);
+  }
+
+  function syncSwitch() {
+    floorsw.setAttribute("data-p", plan);
+    [].forEach.call(floorsw.querySelectorAll("button"), function (b) { b.setAttribute("aria-selected", b.getAttribute("data-p") === plan ? "true" : "false"); });
+    groups.main.style.display = plan === "main" ? "" : "none"; groups.top.style.display = plan === "top" ? "" : "none";
+  }
+  function setPlan(k) {                           // a cross-fade: the top plan fades over the main plan (the main plan never leaves)
+    if (mode !== "top" || k === plan) return;
+    setHot(null); plan = k; planTop.classList.toggle("on", k === "top"); syncSwitch();
+  }
+  function showCta(text) { cta.textContent = text; cta.classList.add("on"); }
+
+  function goTop() {                              // forward: the clip tips the view straight down, then the roof lifts away to the main floor
+    if (mode !== "roof") return;
+    mode = "toppl"; var my = ++token; backBtn.classList.remove("on"); cta.classList.remove("on");
+    v3.playbackRate = RATE3;
+    seekTo(v3, 0).then(function () {
+      if (my !== token) return;
+      v3.style.opacity = 1; var pr = v3.play(); if (pr && pr.catch) pr.catch(function () {});
+      (function loop() {
+        if (my !== token) return;
+        if (v3.currentTime < (v3.duration || 4) - 0.06 && !v3.ended) { dirty = true; requestAnimationFrame(loop); return; }
+        v3.pause();
+        // the plan fades in over the clip's last frame, and the controls appear with it (not after it)
+        planTop.style.transition = FADE_IN; planTop.classList.add("on");
+        plan = "top"; syncSwitch(); floorsw.classList.add("on"); showCta("Back to corner view");
+        setTimeout(function () {
+          if (my !== token) return;
+          planMain.style.transition = "none"; planMain.classList.add("on"); void planMain.offsetWidth; planMain.style.transition = "";   // main floor waits underneath, hidden
+          planTop.style.transition = ""; v3.style.opacity = 0;
+          shade.classList.add("dimmer"); mode = "top"; areasSvg.classList.add("on");
+        }, 650);
+      })();
+    });
+  }
+
+  function backCorner() {                         // reverse: (main floor first fades to the top floor), then back to the clip's last frame and the clip runs backwards
+    if (mode !== "top") return;
+    mode = "toppl"; var my = ++token; cta.classList.remove("on"); floorsw.classList.remove("on"); setHot(null); areasSvg.classList.remove("on");
+    scrubbing = true; v3.pause(); shade.classList.remove("dimmer");
+    var d = v3.duration || 4, last = d - 0.06, pre = 0;
+    s3.want = last;                               // the scrub helper must not pull the clip back to an old target (0) when the seek to the last frame finishes
+    if (plan !== "top") {                         // seamless: settle on the top floor first, so the plan that fades into the video is the one the video starts from
+      planTop.style.transition = FADE_IN; planTop.classList.add("on"); plan = "top"; syncSwitch(); pre = 700;
+    }
+    setTimeout(function () {
+      if (my !== token) return;
+      seekTo(v3, last).then(function () {
+        if (my !== token) return;
+        planMain.style.transition = "none"; planMain.classList.remove("on"); void planMain.offsetWidth; planMain.style.transition = "";   // hidden under the opaque top plan
+        v3.style.opacity = 1; planTop.style.transition = FADE_IN; planTop.classList.remove("on");   // the top plan fades out over the clip's last frame
+        setTimeout(function () {
+          if (my !== token) return;
+          planTop.style.transition = "";
+          var t0 = performance.now();
+          (function loop(now) {
+            if (my !== token) return;
+            var t = Math.max(0, last - (now - t0) / 1000 * RATE3);
+            s3.seek(t); dirty = true;
+            if (t > 0) { requestAnimationFrame(loop); return; }
+            seekTo(v3, 0).then(function () {
+              if (my !== token) return;
+              scrubbing = false; v3.style.opacity = 0; plan = "top"; syncSwitch(); mode = "roof"; backBtn.classList.add("on"); showCta("Show top view");
+            });
+          })(t0);
+        }, 650);
+      });
+    }, pre);
+  }
+
+  cta.addEventListener("click", function () { if (mode === "roof") goTop(); else if (mode === "top") backCorner(); });
+  [].forEach.call(floorsw.querySelectorAll("button"), function (b) { b.addEventListener("click", function () { setPlan(b.getAttribute("data-p")); }); });
+
+  // ---- Level 30: the same push-in as the rooftop flight (clip 1), then the building redraws itself as a blueprint and the level separates into its 3D plan ----
+  var RATE5 = 1.8;                                 // playback speed of the blueprint clip (1 = natural, 6.0 s)
+  var s5 = new Scrubber(v5);
+
+  function goFloor() {
+    if (mode !== "hub") return;
+    mode = "play"; atTop = false; var my = ++token;
+    setBand(null); shade.classList.add("dim"); ui.classList.add("hide");
+    v1.pause(); v5.pause(); v1.playbackRate = RATE; v5.playbackRate = RATE5;
+    Promise.all([seekTo(v1, 0), seekTo(v5, 0)]).then(function () {
+      if (my !== token) return;
+      v1.style.opacity = 1; var pr = v1.play(); if (pr && pr.catch) pr.catch(function () {});
+      (function loop1() {
+        if (my !== token) return;
+        if (v1.currentTime < D1 - 0.02 && !v1.ended) { show(v1.currentTime / TOTAL); requestAnimationFrame(loop1); return; }
+        v1.pause(); show(D1 / TOTAL); v2.style.opacity = 0;            // clip 1's last frame is the blueprint clip's first frame
+        v5.style.opacity = 1; var pr5 = v5.play(); if (pr5 && pr5.catch) pr5.catch(function () {});
+        (function loop5() {
+          if (my !== token) return;
+          var f = Math.min(1, v5.currentTime / (v5.duration || 6));
+          P = 0.5 * (1 - f); setScale(P); dirty = true;                 // the picture eases out from filling the window to showing the whole plan
+          if (v5.currentTime < (v5.duration || 6) - 0.04 && !v5.ended) { requestAnimationFrame(loop5); return; }
+          v5.pause(); P = 0; setScale(0); dirty = true; mode = "floor"; backBtn.classList.add("on"); ui.classList.add("onlight");
+        })();
+      })();
+    });
+  }
+  function backFloor() {
+    if (mode !== "floor") return;
+    mode = "play"; var my = ++token, uiBack = false; scrubbing = true; backBtn.classList.remove("on"); ui.classList.remove("onlight");
+    v1.pause(); v5.pause();
+    var d5 = v5.duration || 6, w5 = d5 / RATE5, w1 = D1 / RATE, t0 = performance.now();
+    s5.want = d5 - 0.03; s1.want = D1 - 0.03;                          // so the scrub helper never pulls a clip back to an old target
+    (function loop(now) {
+      if (my !== token) return;
+      var u = Math.max(0, w5 + w1 - (now - t0) / 1000);                // seconds of wall-clock left
+      if (u > w1) {                                                    // first: the blueprint clip, backwards, with the picture easing back to filling the window
+        var f = Math.min(1, (u - w1) / w5);
+        v5.style.opacity = 1; s5.seek(Math.min(f * d5, d5 - 0.03)); P = 0.5 * (1 - f); setScale(P); v2.style.opacity = 0; dirty = true;
+      } else {                                                         // then clip 1, backwards, down to the whole building
+        var t = u * RATE; v5.style.opacity = 0; show(t / TOTAL); s1.seek(Math.min(t, D1)); v2.style.opacity = 0;
+        if (t < D1 * 0.5 && !uiBack) { uiBack = true; shade.classList.remove("dim"); ui.classList.remove("hide"); }
+      }
+      if (u > 0) { requestAnimationFrame(loop); return; }
+      Promise.all([seekTo(v1, 0), seekTo(v5, 0)]).then(function () {
+        if (my !== token) return;
+        scrubbing = false; v1.style.opacity = 0; v2.style.opacity = 0; v5.style.opacity = 0; mode = "hub"; atTop = true; show(0); shade.classList.remove("dim"); ui.classList.remove("hide");
+      });
+    })(t0);
+  }
+
+  // A window wider than the picture: the strips either side mirror whatever frame is showing, so the sky and sea stay continuous.
+  function smear(ctx, src, x, y, W, H, pad) {     // stretch the top and bottom rows outward so the blur has colour to work with at the window's edge
+    var sw = src.videoWidth || src.naturalWidth || src.width, sh = src.videoHeight || src.naturalHeight || src.height;
+    if (!sw || !sh) return;
+    ctx.drawImage(src, 0, 0, sw, 2, x, y - pad, W, pad);
+    ctx.drawImage(src, 0, sh - 2, sw, 2, x, y + H, W, pad);
+  }
+
+  // A video that is mid-seek reports "not ready" and draws nothing. The strips then use the last good frame of that video, which is also what the
+  // picture itself keeps showing, so the strips and the picture never disagree (and never fall back to the still image).
+  var frameCache = {};
+  function frameFor(src) {
+    if (src === tower) return tower;
+    var c = frameCache[src.id];
+    if (src.readyState >= 2) {
+      if (!c) { c = frameCache[src.id] = document.createElement("canvas"); c.width = 960; c.height = 540; }
+      c.getContext("2d").drawImage(src, 0, 0, 960, 540);
+      return c;
+    }
+    return c || null;
+  }
+
+  function drawSides() {
+    var w = stage.clientWidth, h = stage.clientHeight, W = IMG_W * S;
+    if (OX <= 0.5) { sideL.style.display = sideR.style.display = "none"; return; }
+    sideL.style.display = sideR.style.display = "block";
+    var srcEl = atTop ? tower : (mode === "floor" || +v5.style.opacity > 0 ? v5 : mode === "toppl" || mode === "top" ? (+v3.style.opacity > 0 ? v3 : tower) : (T >= D1 ? v2 : v1));
+    var src = frameFor(srcEl) || tower, plain = srcEl === v5 && P < 0.5;   // the plan: its sides continue the plain background (mirroring would repeat the plan's own walls)
+    var dpr = Math.min(window.devicePixelRatio || 1, 2), pad = 40, FP = 100, sw = Math.ceil(OX) + pad + FP + 3;   // strips reach past the window edge and under the picture's faded edge
+    [[sideL, -pad, OX + pad, OX + pad], [sideR, OX + W - FP - 3, W + FP + 3, FP + 3 - W]].forEach(function (a) {
+      var c = a[0], ctx = c.getContext("2d");
+      c.style.left = a[1] + "px"; c.style.top = -pad + "px"; c.style.width = sw + "px"; c.style.height = h + 2 * pad + "px";
+      var cw = Math.round(sw * dpr), chh = Math.round((h + 2 * pad) * dpr);
+      if (c.width !== cw || c.height !== chh) { c.width = cw; c.height = chh; }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, sw, h + 2 * pad);
+      ctx.drawImage(src, a[3], OY + pad, W, IMG_H * S);   // the picture itself, under the real one, so no seam can show
+      if (plain) {
+        var iw = src.videoWidth || src.naturalWidth || src.width, ih = src.videoHeight || src.naturalHeight || src.height;
+        if (c === sideL) ctx.drawImage(src, 0, 0, 3, ih, 0, OY + pad, a[3], IMG_H * S);                       // stretch the picture's own left edge outward
+        else ctx.drawImage(src, iw - 3, 0, 3, ih, FP + 3, OY + pad, sw - (FP + 3), IMG_H * S);              // ... and its right edge
+        return;
+      }
+      smear(ctx, src, a[3], OY + pad, W, IMG_H * S, pad);
+      ctx.save(); ctx.translate(a[2], 0); ctx.scale(-1, 1); ctx.drawImage(src, 0, OY + pad, W, IMG_H * S); smear(ctx, src, 0, OY + pad, W, IMG_H * S, pad); ctx.restore();
+    });
+  }
+
+  function tick() {
+    if (mode !== "hub") [v1, v2, v3, v5].forEach(function (v) { if (+v.style.opacity > 0) frameFor(v); });   // keep each visible clip's last good frame ready, so the strips never appear empty
+    if (dirty) { drawSides(); dirty = false; }
+    requestAnimationFrame(tick);
+  }
+  stage.addEventListener("click", function (e) {  // the rooftop is the way in
+    if (mode !== "hub") return;
+    var r = stage.getBoundingClientRect(), b = find((e.clientX - r.left - OX) / S, (e.clientY - r.top - OY) / S);
+    if (b && b.kind === "roof") go();
+    else if (b && b.kind === "floor" && b.n === FLOOR_LEVEL) goFloor();
+  });
+  backBtn.addEventListener("click", function () { if (mode === "floor") backFloor(); else back(); });
+  window.addEventListener("keydown", function (e) { if (e.key === "Escape") { if (mode === "top") backCorner(); else if (mode === "floor") backFloor(); else back(); } });
+  window.addEventListener("touchstart", function prime() { // iOS only lets a video decode after a touch
+    [v1, v2, v3, v5].forEach(function (v) { var pr = v.play(); if (pr && pr.then) pr.then(function () { v.pause(); }).catch(function () {}); });
+    window.removeEventListener("touchstart", prime);
+  }, { passive: true, once: true });
+  tower.addEventListener("load", function () { dirty = true; });
+  window.__tower = { get progress() { return P; }, get time() { return T; }, get mode() { return mode; }, v1: v1, v2: v2, go: go, back: back, v3: v3, goFloor: goFloor, backFloor: backFloor, v5: v5, goTop: goTop, backCorner: backCorner, setPlan: setPlan, get plan() { return plan; } };
+
+  window.addEventListener("resize", layout);
+  if (tower.complete) layout(); else tower.addEventListener("load", layout);
+  layout();
+  requestAnimationFrame(tick);
+  if (/[?&]view=top/.test(location.search)) {     // ?view=top opens straight on the top view (for testing)
+    mode = "top"; atTop = false; show(1); backBtn.classList.remove("on"); ui.classList.add("hide"); shade.classList.add("dim", "dimmer");
+    planMain.style.transition = "none"; planMain.classList.add("on"); planTop.classList.add("on"); plan = "top"; syncSwitch(); areasSvg.classList.add("on"); floorsw.classList.add("on"); showCta("Back to corner view");
+  }
+  if (fixedAt !== undefined) {                    // ?at=0.5 freezes the timeline at that point (for testing)
+    var fp = Math.max(0, Math.min(1, parseFloat(fixedAt)));
+    if (fp > 0) { mode = "frozen"; atTop = false; scrubbing = true; show(fp); s1.seek(Math.min(T, D1)); s2.seek(Math.max(0, T - D1)); }
+  }
+})();
+</script>
+
+</body>
+</html>

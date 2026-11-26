@@ -367,12 +367,16 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
   var v8 = document.getElementById("v8"), v6 = document.getElementById("v6"), v5 = document.getElementById("v5"), v3 = document.getElementById("v3"), planMain = document.getElementById("planMain"), planTop = document.getElementById("planTop"), areasSvg = document.getElementById("areas");
   var v1 = document.getElementById("v1"), v2 = document.getElementById("v2"), sideL = document.getElementById("sideL"), sideR = document.getElementById("sideR");
   var glass = document.getElementById("glass");
-  var WALK = {"segs":[{"file":"walk1.mp4","dur":30.958},{"file":"walk2.mp4","dur":46.0},{"file":"walk3.mp4","dur":5.375}],"items":[{"id":"C01","seg":0,"a":0.0,"b":6.9583},{"id":"C02","seg":0,"a":6.9583,"b":10.9583},{"id":"C03","seg":0,"a":10.9583,"b":14.9583},{"id":"C04","seg":0,"a":14.9583,"b":19.9583},{"id":"C05","seg":0,"a":19.9583,"b":24.9583},{"id":"C06","seg":0,"a":24.9583,"b":30.9583},{"id":"C07","seg":1,"a":0.0,"b":5.0},{"id":"C08","seg":1,"a":5.0,"b":15.0},{"id":"C09","seg":1,"a":15.0,"b":20.0},{"id":"C10","seg":1,"a":20.0,"b":25.0},{"id":"C11","seg":1,"a":20.0,"b":24.9583,"rev":true},{"id":"C12","seg":1,"a":25.0,"b":30.0},{"id":"C13","seg":1,"a":25.0,"b":29.9583,"rev":true},{"id":"C14","seg":1,"a":30.0,"b":39.0},{"id":"C19","seg":1,"a":39.0,"b":46.0},{"id":"C20","seg":2,"a":0.0,"b":5.375}]};                    // the apartment walkthrough: segments (video files) and the 20 clips as ranges inside them
-  var WV = [];
-  if (WALK) WALK.segs.forEach(function (sg, i) {  // one <video> per segment, stacked just above the unit-8 clip; the files load only once someone opens the unit
-    var el = document.createElement("video"); el.className = "vid"; el.id = "w" + i; el.muted = true; el.preload = "none"; el.setAttribute("playsinline", ""); el.setAttribute("aria-hidden", "true"); el.setAttribute("data-src", sg.file);
-    var after = WV.length ? WV[WV.length - 1] : v5; after.parentNode.insertBefore(el, after.nextSibling); WV.push(el);
+  var WALK = {"segs":[{"file":"walk1.mp4","rfile":"walk1r.mp4","frames":743,"dur":30.9583},{"file":"walk2.mp4","rfile":"walk2r.mp4","frames":1080,"dur":45.0},{"file":"walk3.mp4","rfile":"walk3r.mp4","frames":129,"dur":5.375}],"items":[{"id":"C01","seg":0,"a":0.0,"b":6.9583},{"id":"C02","seg":0,"a":6.9583,"b":10.9583},{"id":"C03","seg":0,"a":10.9583,"b":14.9583},{"id":"C04","seg":0,"a":14.9583,"b":19.9583},{"id":"C05","seg":0,"a":19.9583,"b":24.9583},{"id":"C06","seg":0,"a":24.9583,"b":30.9583},{"id":"C07","seg":1,"a":0.0,"b":5.0},{"id":"C08","seg":1,"a":5.0,"b":14.0},{"id":"C09","seg":1,"a":14.0,"b":19.0},{"id":"C10","seg":1,"a":19.0,"b":24.0},{"id":"C11","seg":1,"a":19.0,"b":23.9583,"rev":true},{"id":"C12","seg":1,"a":24.0,"b":29.0},{"id":"C13","seg":1,"a":24.0,"b":28.9583,"rev":true},{"id":"C14","seg":1,"a":29.0,"b":38.0},{"id":"C19","seg":1,"a":38.0,"b":45.0},{"id":"C20","seg":2,"a":0.0,"b":5.375}]};                    // the apartment walkthrough: segments (video files) and the 20 clips as ranges inside them
+  var WV = [], WR = [];                           // per segment: the video file, and the same file played backwards
+  if (WALK) ["F", "R"].forEach(function (kind) {
+    WALK.segs.forEach(function (sg, i) {          // stacked just above the unit-8 clip; the files load only once someone opens the unit
+      var el = document.createElement("video"); el.className = "vid"; el.id = "w" + kind + i; el.muted = true; el.preload = "none"; el.setAttribute("playsinline", ""); el.setAttribute("aria-hidden", "true");
+      el.setAttribute("data-src", kind === "F" ? sg.file : sg.rfile); el.setAttribute("data-key", kind + i);
+      var list = kind === "F" ? WV : WR, after = list.length ? list[list.length - 1] : (kind === "F" ? v5 : WV[WV.length - 1]); after.parentNode.insertBefore(el, after.nextSibling); list.push(el);
+    });
   });
+  var WA = WV.concat(WR);
   var S = 1, OX = 0, OY = 0, current = null, lastX = 0, lastY = 0, raf = 0, lastBuzz = 0;
 
   function layout() {
@@ -395,7 +399,7 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
     [tower, v1, v2].forEach(function (el) { el.style.webkitMaskImage = fade; el.style.maskImage = fade; });                // top-anchored at rest, centred once the camera has risen
     tower.style.width = IMG_W * S + "px"; tower.style.height = IMG_H * S + "px";
     tower.style.left = OX + "px"; tower.style.top = OY + "px";
-    [v1, v2, v3, v5, v6, v8, planMain, planTop, areasSvg].concat(WV).forEach(function (v) { v.style.width = IMG_W * S + "px"; v.style.height = IMG_H * S + "px"; v.style.left = OX + "px"; v.style.top = OY + "px"; });
+    [v1, v2, v3, v5, v6, v8, planMain, planTop, areasSvg].concat(WA).forEach(function (v) { v.style.width = IMG_W * S + "px"; v.style.height = IMG_H * S + "px"; v.style.left = OX + "px"; v.style.top = OY + "px"; });
   }
 
   function place(b, instant) {
@@ -509,6 +513,7 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
     if (info.plan) { dot.className = ""; label.textContent = free + " of " + UNIT_COUNT + " available" + (info.foot ? "  \u00B7  click unit " + FLOOR_UNIT : ""); }
     else { dot.className = "off"; label.textContent = info.foot; }
     cNum.classList.remove("tick"); void cNum.offsetWidth; cNum.classList.add("tick");
+    if (info.n === FLOOR_LEVEL && typeof wLoad === "function") wLoad();   // the visitor is looking at the level with the walkthrough: start fetching it now
   }
 
   function setBand(b) {
@@ -797,11 +802,11 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
   }
   function backFloor() {
     if (mode !== "floor") return;
-    if (wLive && wT > 0.996 && wC > 0.996) {        // finished: the last picture is the plan again, so go straight back
-      wT = wC = 0; WV.forEach(function (x) { x.style.opacity = 0; }); wShown = -1; v5.style.opacity = 1; dirty = true;
-    } else if (wLive && (wT > 0 || wC > 0.002)) {   // somewhere in the walkthrough: ease back to the plan first, then reverse the flight
+    if (wLive && wT > 0.996 && wTau / wTotal > 0.996) {   // finished: the last picture is the plan again, so go straight back
+      wT = wTau = 0; wHome();
+    } else if (wLive && (wT > 0 || wTau > 0.05)) {  // somewhere in the walkthrough: ease back to the plan first, then reverse the flight
       mode = "wback"; wT = 0; wBack = true; backBtn.classList.remove("on"); wCue(false);
-      (function settle() { if (wC > 0.003) { requestAnimationFrame(settle); return; } wC = 0; wBack = false; mode = "floor"; backFloor(); })();
+      (function settle() { if (wTau > 0.06) { requestAnimationFrame(settle); return; } wBack = false; wTau = 0; wHome(); mode = "floor"; backFloor(); })();
       return;
     }
     wLive = false; wCue(false);
@@ -822,57 +827,106 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
       if (u > 0) { requestAnimationFrame(loop); return; }
       Promise.all([seekTo(v1, 0), seekTo(v5, 0)]).then(function () {
         if (my !== token) return;
-        scrubbing = false; v1.style.opacity = 0; v2.style.opacity = 0; v5.style.opacity = 0; WV.forEach(function (x) { x.style.opacity = 0; }); wShown = -1; setWhite(false); mode = "hub"; atTop = true; show(0); shade.classList.remove("dim"); ui.classList.remove("hide");
+        scrubbing = false; v1.style.opacity = 0; v2.style.opacity = 0; v5.style.opacity = 0; wHome(); v5.style.opacity = 0; setWhite(false); mode = "hub"; atTop = true; show(0); shade.classList.remove("dim"); ui.classList.remove("hide");
       });
     })(t0);
   }
 
-  // ---- The apartment walkthrough. On the plan, scrolling (wheel, touch drag or arrow keys) walks through the apartment: 16 clips, 01 > 02 > ... > 10 > 11 > 10 > 12 > 10 > 13 > 02 > 01 (the second bedroom and the shared bathroom are left out for now).
-  //      The clips sit one after another inside a few video files (WALK.segs). A clip marked rev is a clip played backwards (the way back out of a room). ----
+  // ---- The apartment walkthrough. On the plan, scrolling (wheel, touch drag or arrow keys) walks through the apartment: 16 clips, 01 > 02 > ... > 10 > 11 > 10 > 12 > 10 > 13 > 02 > 01
+  //      (the second bedroom and the shared bathroom are left out for now).
+  //      The clips sit one after another inside a few video files (WALK.segs), each also saved played backwards. A clip marked rev is a clip played backwards (the way back out of a room).
+  //      The scroll sets a target position; the footage PLAYS towards it at a speed that follows the distance (never faster than W_RMAX), instead of jumping the video about with seeks,
+  //      so it stays smooth however fast the visitor scrolls. Going forward uses the forward files, going back uses the backwards files, so both directions are plain playback. ----
   var WALK_PX = 110;                                // scroll distance per second of footage
-  var WS = WV.map(function (v) { return new Scrubber(v); });
-  var wItems = [], wTotal = 0, wT = 0, wC = 0, wLive = false, wShown = -1, wLoaded = false, wBack = false, wTouchY = null;
+  var W_RMAX = 4;                                   // the fastest the footage ever plays while it catches up with the scroll
+  var wItems = [], wTotal = 0, wT = 0, wTau = 0, wLive = false, wAct = null, wLoaded = false, wBack = false, wMoving = false, wTouchY = null, wReady = {};
   if (WALK) WALK.items.forEach(function (it) { var d = it.b - it.a; wItems.push({ id: it.id, seg: it.seg, a: it.a, b: it.b, rev: !!it.rev, t0: wTotal, d: d }); wTotal += d; });
-  function wLoad() { if (wLoaded || !WALK) return; wLoaded = true; WV.forEach(function (v) { v.src = v.getAttribute("data-src"); v.preload = "auto"; v.load(); }); }
-  function wLocate(t) {
-    t = Math.max(0, Math.min(wTotal - 0.001, t));
-    var i = 0; while (i < wItems.length - 1 && t >= wItems[i + 1].t0) i++;
-    var it = wItems[i], u = t - it.t0;
-    return { i: i, seg: it.seg, time: it.rev ? it.b - u : it.a + u };
+  function wDur(seg) { return WALK.segs[seg].frames / 24; }
+  function wKey(el) { return el.getAttribute("data-key"); }
+  function wLoad() {                                // fetch the files one after another, in the order the visitor will need them, and keep them in memory so that no seek ever waits for the network
+    if (wLoaded || !WALK) return; wLoaded = true;
+    var order = [], seen = {};
+    function want(k, sg) { var key = k + sg; if (!seen[key]) { seen[key] = 1; order.push(key); } }
+    wItems.forEach(function (it) { want(it.rev ? "R" : "F", it.seg); });
+    WALK.segs.forEach(function (sg, i) { want("F", i); want("R", i); });
+    var chain = Promise.resolve();
+    order.forEach(function (key) {
+      chain = chain.then(function () {
+        var el = (key.charAt(0) === "F" ? WV : WR)[+key.slice(1)], url = el.getAttribute("data-src");
+        return fetch(url).then(function (r) { if (!r.ok) throw 0; return r.blob(); }).then(function (bl) { el.src = URL.createObjectURL(bl); }, function () { el.src = url; }).then(function () {
+          el.preload = "auto"; el.load();
+          return new Promise(function (res) { var done = function () { wReady[key] = true; res(); }; if (el.readyState >= 2) return done(); el.addEventListener("loadeddata", done, { once: true }); el.addEventListener("error", res, { once: true }); });
+        });
+      });
+    });
+  }
+  function wItemAt(tau, dir) {                      // the clip that tau is in; exactly on a join it is the clip being left when going back
+    var i = 0; while (i < wItems.length - 1 && (dir > 0 ? tau >= wItems[i + 1].t0 : tau > wItems[i + 1].t0)) i++; return i;
+  }
+  function wSrc(i, dir, tau) {                      // which video, and which time in it, shows clip i at position tau when the footage is playing in direction dir
+    var it = wItems[i], u = Math.max(0, Math.min(it.d, tau - it.t0)), tF = it.rev ? it.b - u : it.a + u, useF = (dir > 0) === !it.rev;
+    return useF ? { el: WV[it.seg], t: tF, kind: "F" } : { el: WR[it.seg], t: wDur(it.seg) - tF, kind: "R" };
+  }
+  function wLimit() {                               // the footage cannot run on into a clip whose file has not arrived yet
+    for (var i = 0; i < wItems.length; i++) if (!wReady[(wItems[i].rev ? "R" : "F") + wItems[i].seg]) return wItems[i].t0;
+    return wTotal;
+  }
+  function wSeek(el, t) { try { if (el.duration) t = Math.min(t, el.duration - 0.02); if (Math.abs(el.currentTime - t) > 0.02) el.currentTime = t; } catch (e) {} }
+  function wAt(el, t) { return el.readyState >= 2 && !el.seeking && Math.abs(el.currentTime - t) < 0.1; }
+  function wShow(el) {
+    if (wAct === el) return;
+    WA.forEach(function (x) { if (x !== el) x.style.opacity = 0; }); el.style.opacity = 1; v5.style.opacity = 0;
+    if (wAct) wAct.pause(); wAct = el; dirty = true;
+  }
+  function wHome() { WA.forEach(function (x) { x.pause(); x.style.opacity = 0; }); wAct = null; v5.style.opacity = 1; dirty = true; }
+  function wPark(s) { if (s.el !== wAct && wReady[wKey(s.el)] && Math.abs(s.el.currentTime - s.t) > 0.04) { s.el.pause(); wSeek(s.el, s.t); } }
+  function wIdle() {                                // stopped: hold the picture, and park the other-direction video on the same frame so a turn-around is instant
+    if (wAct) wAct.pause();
+    if (wTau < 0.04 && wT * wTotal < 0.06 && wAct) wHome();
+    if (wTau < wTotal - 0.02) wPark(wSrc(wItemAt(wTau, 1), 1, wTau));
+    if (wTau > 0.02) wPark(wSrc(wItemAt(wTau, -1), -1, wTau));
+  }
+  function wMove(dir, ad) {
+    var i = wItemAt(wTau, dir), it = wItems[i], s = wSrc(i, dir, wTau), el = s.el;
+    if (!wReady[wKey(el)]) { if (wAct) wAct.pause(); return; }
+    if (wAct !== el) {                              // another file takes over: the look-ahead has normally parked it on the right frame already
+      if (!wAt(el, s.t)) { el.pause(); wSeek(el, s.t); if (wAct) wAct.pause(); return; }   // wait for it to land; the last picture stays up meanwhile
+      wShow(el);
+    } else if (Math.abs(el.currentTime - s.t) > 0.35) { el.pause(); wSeek(el, s.t); return; }
+    var cap = wBack ? 12 : Math.min(W_RMAX, 2.2 + 0.6 * wTau);          // gentle at the very start, full speed after a few seconds
+    var rate = Math.max(0.15, Math.min(cap, 2.4 * ad));
+    if (Math.abs(el.playbackRate - rate) > 0.03) el.playbackRate = rate;
+    if (el.paused && !el.ended) { var pr = el.play(); if (pr && pr.catch) pr.catch(function () {}); }   // (play() on a video that has run to its end would start it again from 0)
+    var et = el.ended && el.duration ? el.duration : el.currentTime, tF = s.kind === "F" ? et : wDur(it.seg) - et, u = it.rev ? it.b - tF : tF - it.a;
+    wTau = it.t0 + Math.max(0, Math.min(it.d, u));
+    var bound = dir > 0 ? it.t0 + it.d : it.t0, j = i + dir;               // look ahead: get the next clip's file onto its first frame before we get there
+    if (j >= 0 && j < wItems.length && Math.abs(bound - wTau) < 1.0 + 0.7 * rate) { var s2 = wSrc(j, dir, bound); if (s2.el !== el) wPark(s2); }
   }
   function wCue(on) {
-    if (on) { scrollCue.firstChild.textContent = "Scroll to walk through"; scrollCue.classList.add("dark"); scrollCue.classList.add("on"); }
+    if (on) { scrollCue.firstChild.textContent = wReady.F0 ? "Scroll to walk through" : "Loading"; scrollCue.classList.add("dark"); scrollCue.classList.add("on"); }
     else { scrollCue.classList.remove("on"); setTimeout(function () { if (mode !== "floor") { scrollCue.classList.remove("dark"); scrollCue.firstChild.textContent = "Scroll"; } }, 520); }
   }
   function wStart() {
     if (!WALK || !WV.length) return;
-    wLive = true; wT = wC = 0; wShown = -1; wBack = false; requestAnimationFrame(wTick);
+    wLive = true; wT = wTau = 0; wAct = null; wBack = false; wMoving = false; requestAnimationFrame(wTick);
     setTimeout(function () { if (mode === "floor" && wT < 0.01) wCue(true); }, 500);
   }
   function wTick() {
     if (!wLive) return;
-    wC += (wT - wC) * (wBack ? 0.2 : 0.14); if (Math.abs(wT - wC) < 0.0003) wC = wT;
-    if (wC > 0.0012) {
-      var loc = wLocate(wC * wTotal), v = WV[loc.seg], sc = WS[loc.seg];
-      sc.seek(loc.time);
-      var ready = v.readyState >= 2 && !sc.seeking && Math.abs(v.currentTime - loc.time) < 0.12;
-      if (wShown !== loc.seg && (ready || wShown < 0 && v.readyState >= 2)) {   // switch pictures only once the new one has landed; until then the last one stays
-        WV.forEach(function (x, k) { x.style.opacity = k === loc.seg ? 1 : 0; }); wShown = loc.seg; v5.style.opacity = 0;
-      }
-      dirty = true;
-    } else if (wShown >= 0) {                       // back at the very start: the plan from the flight is showing again
-      WV.forEach(function (x) { x.style.opacity = 0; }); wShown = -1; v5.style.opacity = 1; dirty = true;
-    }
+    var tgt = Math.min(wT * wTotal, wLimit()), err = tgt - wTau, ad = Math.abs(err);
+    if (ad > (wMoving ? 0.03 : 0.07)) { wMoving = true; wMove(err > 0 ? 1 : -1, ad); } else { wMoving = false; wIdle(); }
+    if (wMoving || wAct) dirty = true;
     if (mode === "floor") {
-      var atStart = wT < 0.003 && wC < 0.003, atEnd = wT > 0.997 && wC > 0.997;   // the picture is the plan at both ends
+      var q = wTau / wTotal, atStart = wT < 0.003 && q < 0.003, atEnd = wT > 0.997 && q > 0.997;   // the picture is the plan at both ends
       backBtn.classList.toggle("on", atStart || atEnd);
+      if (wT > 0.01) scrollCue.classList.remove("on");
+      else if (scrollCue.classList.contains("dark")) { scrollCue.firstChild.textContent = wReady.F0 ? "Scroll to walk through" : "Loading"; if (q < 0.002) scrollCue.classList.add("on"); }
     }
-    if (mode === "floor") { if (wT > 0.01) scrollCue.classList.remove("on"); else if (!scrollCue.classList.contains("on") && wC < 0.002 && scrollCue.classList.contains("dark")) scrollCue.classList.add("on"); }
     requestAnimationFrame(wTick);
   }
   function wBy(dq) { if (mode !== "floor" || !wLive) return false; wT = Math.max(0, Math.min(1, wT + dq)); return true; }
   function wJump(dir) {                             // Space / Page keys: glide to the start of the next (or previous) clip
-    var t = wC * wTotal, i = wLocate(t).i, to = dir > 0 ? (i + 1 < wItems.length ? wItems[i + 1].t0 : wTotal) : (t - wItems[i].t0 > 0.5 ? wItems[i].t0 : (i > 0 ? wItems[i - 1].t0 : 0));
+    var i = wItemAt(wTau, dir > 0 ? 1 : -1), to = dir > 0 ? (i + 1 < wItems.length ? wItems[i + 1].t0 : wTotal) : (wTau - wItems[i].t0 > 0.5 ? wItems[i].t0 : (i > 0 ? wItems[i - 1].t0 : 0));
     wT = Math.max(0, Math.min(1, to / wTotal));
   }
   window.addEventListener("wheel", function (e) {
@@ -1028,7 +1082,7 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
     return c || null;
   }
 
-  function wActive() { for (var i = 0; i < WV.length; i++) if (+WV[i].style.opacity > 0) return WV[i]; return null; }
+  function wActive() { for (var i = 0; i < WA.length; i++) if (+WA[i].style.opacity > 0) return WA[i]; return null; }
   function edgePlain(c) {                          // true when the frame's left and right edges are plain near-white (the floor plan on white): the side strips then just continue it
     try {
       var g = c.getContext("2d"), H = c.height, W = c.width, ok = true;
@@ -1046,7 +1100,7 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
     if (OX <= 0.5) { sideL.style.display = sideR.style.display = "none"; return; }
     sideL.style.display = sideR.style.display = "block";
     var srcEl = atTop ? tower : (+v8.style.opacity > 0 ? v8 : +v6.style.opacity > 0 ? v6 : wActive() ? wActive() : mode === "floor" || +v5.style.opacity > 0 ? v5 : mode === "toppl" || mode === "top" ? (+v3.style.opacity > 0 ? v3 : tower) : (T >= D1 ? v2 : v1));
-    var src = frameFor(srcEl) || tower, plain = (srcEl === v5 && v5.currentTime > UE0 + 1.5) || (WV.indexOf(srcEl) >= 0 && edgePlain(src));   // the plan: its sides continue the plain background (mirroring would repeat the plan's own walls)
+    var src = frameFor(srcEl) || tower, plain = (srcEl === v5 && v5.currentTime > UE0 + 1.5) || (WA.indexOf(srcEl) >= 0 && edgePlain(src));   // the plan: its sides continue the plain background (mirroring would repeat the plan's own walls)
     var dpr = Math.min(window.devicePixelRatio || 1, 2), pad = 40, FP = 100, sw = Math.ceil(OX) + pad + FP + 3;   // strips reach past the window edge and under the picture's faded edge
     [[sideL, -pad, OX + pad, OX + pad], [sideR, OX + W - FP - 3, W + FP + 3, FP + 3 - W]].forEach(function (a) {
       var c = a[0], ctx = c.getContext("2d");
@@ -1067,7 +1121,7 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
   }
 
   function tick() {
-    if (mode !== "hub") [v1, v2, v3, v5, v6, v8].concat(WV).forEach(function (v) { if (+v.style.opacity > 0) frameFor(v); });   // keep each visible clip's last good frame ready, so the strips never appear empty
+    if (OX > 0.5 && mode !== "hub") [v1, v2, v3, v5, v6, v8].concat(WA).forEach(function (v) { if (+v.style.opacity > 0) frameFor(v); });   // keep each visible clip's last good frame ready, so the strips never appear empty
     if (dirty) { drawSides(); dirty = false; }
     requestAnimationFrame(tick);
   }
@@ -1084,11 +1138,11 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
   backBtn.addEventListener("click", function () { if (mode === "floor") backFloor(); else if (mode === "spot") backSpot(); else back(); });
   window.addEventListener("keydown", function (e) { if (e.key === "Escape") { if (mode === "top") backCorner(); else if (mode === "floor") { if (backBtn.classList.contains("on")) backFloor(); } else if (mode === "spot") backSpot(); else back(); } });
   window.addEventListener("touchstart", function prime() { // iOS only lets a video decode after a touch
-    [v1, v2, v3, v5, v6, v8].concat(WV).forEach(function (v) { var pr = v.play(); if (pr && pr.then) pr.then(function () { v.pause(); }).catch(function () {}); });
+    [v1, v2, v3, v5, v6, v8].concat(WA).forEach(function (v) { var pr = v.play(); if (pr && pr.then) pr.then(function () { v.pause(); }).catch(function () {}); });
     window.removeEventListener("touchstart", prime);
   }, { passive: true, once: true });
   tower.addEventListener("load", function () { dirty = true; });
-  window.__tower = { get progress() { return P; }, get time() { return T; }, get mode() { return mode; }, v1: v1, v2: v2, go: go, back: back, v3: v3, goFloor: goFloor, backFloor: backFloor, goSpot: goSpot, backSpot: backSpot, v6: v6, v8: v8, get scroll() { return scrollC; }, get scrollTarget() { return scrollT; }, setScroll: function (q) { scrollT = q; }, get spotIn() { return spotIn; }, v5: v5, walk: { get total() { return wTotal; }, get items() { return wItems; }, setT: function (q) { wT = q; }, state: function () { var l = wLocate(wC * wTotal); return { wT: +wT.toFixed(3), wC: +wC.toFixed(3), clip: wItems[l.i] && wItems[l.i].id, seg: l.seg, time: +l.time.toFixed(2), shown: wShown, ready: WV.map(function (v) { return v.readyState + '/' + (+v.style.opacity) + '/' + v.currentTime.toFixed(2); }) }; } }, goTop: goTop, backCorner: backCorner, setPlan: setPlan, get plan() { return plan; } };
+  window.__tower = { get progress() { return P; }, get time() { return T; }, get mode() { return mode; }, v1: v1, v2: v2, go: go, back: back, v3: v3, goFloor: goFloor, backFloor: backFloor, goSpot: goSpot, backSpot: backSpot, v6: v6, v8: v8, get scroll() { return scrollC; }, get scrollTarget() { return scrollT; }, setScroll: function (q) { scrollT = q; }, get spotIn() { return spotIn; }, v5: v5, walk: { get total() { return wTotal; }, get items() { return wItems; }, setT: function (q) { wT = q; }, state: function () { var l = wItems[wItemAt(wTau, 1)]; return { wT: +wT.toFixed(3), wC: +(wTau / wTotal).toFixed(4), tau: +wTau.toFixed(2), clip: l && l.id, act: wAct ? wKey(wAct) : null, moving: wMoving, ready: wReady }; } }, goTop: goTop, backCorner: backCorner, setPlan: setPlan, get plan() { return plan; } };
 
   window.addEventListener("resize", layout);
   if (tower.complete) layout(); else tower.addEventListener("load", layout);

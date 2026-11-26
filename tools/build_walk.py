@@ -25,6 +25,8 @@ for c in UNIQUE:
     out='%s/web/%s.mp4'%(W,c)
     sh('ffmpeg','-y','-i',src,'-vf','scale=1280:720:flags=lanczos,trim=start_frame=%d:end_frame=%d,setpts=PTS-STARTPTS'%(s,e),'-r',str(FPS),'-an','-c:v','libx264','-preset','slow','-crf','24','-g','6','-keyint_min','6','-sc_threshold','0','-pix_fmt','yuv420p',out)
     print(c,SEL[c],'frames',n,'keep',s,e,'->',nbf(out),'frames',os.path.getsize(out)//1024,'KB')
+    rout='%s/web/%s_r.mp4'%(W,c)           # the same clip played backwards, so that walking back (and the way out of a room) also plays natively
+    sh('ffmpeg','-y','-i',out,'-vf','reverse','-r',str(FPS),'-an','-c:v','libx264','-preset','slow','-crf','24','-g','6','-keyint_min','6','-sc_threshold','0','-pix_fmt','yuv420p',rout)
 json.dump(trims,open(W+'/trims.json','w'))
 # group into segment files of at most ~12.5 MB, in timeline order of first use
 LIM=12.5*1024*1024; groups=[[]]; size=0
@@ -40,7 +42,10 @@ for gi,g in enumerate(groups):
     off=0.0
     for c in g:
         k=nbf('%s/web/%s.mp4'%(W,c)); loc[c]=(gi,off,off+k/FPS); off+=k/FPS
-    segs.append({'file':fn,'dur':round(off,3)})
+    rlst=W+'/web/seg%dr.txt'%gi; open(rlst,'w').write(''.join("file '%s/web/%s_r.mp4'\n"%(W,c) for c in reversed(g)))
+    rfn='walk%dr.mp4'%(gi+1); sh('ffmpeg','-y','-f','concat','-safe','0','-i',rlst,'-c','copy','-movflags','+faststart',SITE+'/'+rfn)
+    nfr=nbf(out); assert nfr==nbf(SITE+'/'+rfn)
+    segs.append({'file':fn,'rfile':rfn,'frames':nfr,'dur':round(nfr/FPS,4)})
     print(fn,[c for c in g],round(off,2),'s',os.path.getsize(out)//1024,'KB')
 items=[]
 for cid,rev in TIMELINE:

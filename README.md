@@ -38,6 +38,7 @@ site/
   stage8.mp4          clip 8: terrace to the pool, scrubbed by scrolling   (720p enlarged, 5 s)
   stage12.mp4         unit 8 flight: facade centre, through the glass, living room, plan on white (1080p, 8.8 s)
   walk1.mp4 ..3       the apartment walkthrough, 720p (1280 x 720), 3 files so each stays small; see below
+  walk1r.mp4 ..3r     the same three files played backwards (so scrolling back also plays natively)
 tools/                helper scripts used while making the clips (see below)
 .github/workflows/pages.yml   GitHub Pages deployment
 walkthrough_720p/     the walkthrough as delivered: selected clips, assembled master, generation report
@@ -63,7 +64,7 @@ The values in the file now are **random placeholders** (2 or 3 per level).
 | `RATE` | Playback speed of the rooftop flight (3.2 = about 2 s). |
 | `RATE3` | Speed of the top-view clip. |
 | `FLY1`, `FRATE`, `FEND` | Speed of clip 1 on the unit 8 journey, of the joined clip, and the speed it eases down to as the plan settles. |
-| `WALK_PX` | Scroll distance per second of walkthrough footage (110; the whole walkthrough is about 128 s). |
+| `WALK_PX`, `W_RMAX` | Scroll distance per second of walkthrough footage (110; the whole walkthrough is about 91 s), and the fastest the footage plays while catching up with the scroll (4). |
 | `RATE6` | Speed of the terrace glide (4.2 = about 1.2 s). |
 | `SCROLL_PX` | Wheel distance for the whole pool clip (1500). |
 | `SPOT` | Centre and size of the fire pit hover spot, as fractions of the rooftop picture. |
@@ -94,7 +95,7 @@ Made from the approved stills (`01`..`15`) with Higgsfield `cinematic_studio_vid
 01 > 02 > 03 > 04 > 05 > 06 > 07 > 08 > 09 > 10 > 11 > 10 > 12 > 10 > 13 > 02 > 01
 ```
 
-Sixteen clips were generated (C01 to C10, C12, C14, C15, C17, C19, C20). The returns C11 and C13 are the outbound clips C10 and C12 played backwards (checked: it backs out along the same path and the endpoints are exact). The second bedroom and the shared bathroom (C15 to C18) are generated and kept in `walkthrough_720p/Selected clips`, but they are **left out of the flow for now**: to add them back, list them in `UNIQUE` and `TIMELINE` in `tools/build_walk.py` and rebuild. On the page, the clips sit one after another inside `walk1.mp4` to `walk3.mp4`, and the list of ranges (the `WALK` object near the top of the script) says where each clip starts and ends and which ones play backwards. `tools/build_walk.py` rebuilds those files and that list from the selected clips. `walkthrough_720p/generation-report.txt` lists every clip's endpoints, attempts, the attempt chosen and any open defects.
+Sixteen clips were generated (C01 to C10, C12, C14, C15, C17, C19, C20). The returns C11 and C13 are the outbound clips C10 and C12 played backwards (checked: it backs out along the same path and the endpoints are exact). The second bedroom and the shared bathroom (C15 to C18) are generated and kept in `walkthrough_720p/Selected clips`, but they are **left out of the flow for now**: to add them back, list them in `UNIQUE` and `TIMELINE` in `tools/build_walk.py` and rebuild. The page does not seek the video on every scroll tick (that stutters and jumps when you scroll fast). The scroll sets a target position and the footage plays towards it at a speed that follows the distance, never faster than `W_RMAX` (4x) and gentler at the very start; going back plays the `r` files. The files are fetched one after another into memory when the visitor looks at level 30, so playback never waits on the network. On the page, the clips sit one after another inside `walk1.mp4` to `walk3.mp4`, and the list of ranges (the `WALK` object near the top of the script) says where each clip starts and ends and which ones play backwards. `tools/build_walk.py` rebuilds those files and that list from the selected clips. `walkthrough_720p/generation-report.txt` lists every clip's endpoints, attempts, the attempt chosen and any open defects.
 
 ## Regenerating a clip
 

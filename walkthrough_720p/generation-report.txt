@@ -62,11 +62,15 @@ C07  07 -> 08
     defects: none
 
 C08  08 -> 09
-    requested length: 10 s   attempts generated: 2   selected: a2
+    requested length: 9 s   attempts generated: 6   selected: a6
     a1: job cfd91566-a3d2-4757-b528-499f8da577b1   end match rejected: view jumps to a different door/closet before the room
-    a2: job 2666f1f9-f1ce-4f37-b45c-955c8b89ab4d   end match 0.991
+    a2: job 2666f1f9-f1ce-4f37-b45c-955c8b89ab4d   end match superseded: the far-end hallway door opened as well as the left door
+    a3: job a30ce922-147e-4bf7-ac05-37830384d47c   end match corrected version, 8 s, end match 0.985
+    a4: job f63359d9-65cf-4c0d-969d-ad4f054c2b6d   end match corrected version, 8 s, end match 0.987
+    a5: job ae2af3fb-8ff3-492e-8745-5a2f6b81c79a   end match corrected version, 10 s, end match 0.991
+    a6: job 9c6e58a6-ed00-4362-bc05-3ef8dc040a91   end match 0.988
     resolution: 1280 x 720
-    defects: The door opens and the camera slips past its edge with some blur before turning left in the bedroom.
+    defects: none. Regenerated at the client's request because the far-end hallway door also opened in the first version; in the chosen clip only the left door opens (it swings open gradually as the camera approaches) and the far-end door stays shut. The client chose this attempt (listed as a6 here: the 9 s corrected attempt). Three more attempts to route through the far-end door instead (jobs 0f0e6683-7db9-4406-83e7-d82e94cad42b, e544e115-ddb2-4311-9d77-4f47a42f28ff, 6aba4117-6cc2-404c-8c24-1fa6099cc41c) were not used.
 
 C09  09 -> 10
     requested length: 5 s   attempts generated: 1   selected: a1

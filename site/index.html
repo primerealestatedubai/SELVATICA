@@ -366,7 +366,7 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
   var v8 = document.getElementById("v8"), v6 = document.getElementById("v6"), v5 = document.getElementById("v5"), v3 = document.getElementById("v3"), planMain = document.getElementById("planMain"), planTop = document.getElementById("planTop"), areasSvg = document.getElementById("areas");
   var v1 = document.getElementById("v1"), v2 = document.getElementById("v2"), sideL = document.getElementById("sideL"), sideR = document.getElementById("sideR");
   var glass = document.getElementById("glass");
-  var WALK = {"segs":[{"file":"walk1.mp4","rfile":"walk1r.mp4","frames":743,"dur":30.9583},{"file":"walk2.mp4","rfile":"walk2r.mp4","frames":1056,"dur":44.0},{"file":"walk3.mp4","rfile":"walk3r.mp4","frames":297,"dur":12.375}],"items":[{"id":"C01","seg":0,"a":0.0,"b":6.9583},{"id":"C02","seg":0,"a":6.9583,"b":10.9583},{"id":"C03","seg":0,"a":10.9583,"b":18.9583},{"id":"C04","seg":0,"a":18.9583,"b":25.9583},{"id":"C05","seg":0,"a":25.9583,"b":30.9583},{"id":"C06","seg":1,"a":0.0,"b":6.0},{"id":"C07","seg":1,"a":6.0,"b":11.0},{"id":"C08","seg":1,"a":11.0,"b":20.0},{"id":"C09","seg":1,"a":20.0,"b":25.0},{"id":"C10","seg":1,"a":25.0,"b":30.0},{"id":"C11","seg":1,"a":25.0,"b":29.9583,"rev":true},{"id":"C12","seg":1,"a":30.0,"b":35.0},{"id":"C13","seg":1,"a":30.0,"b":34.9583,"rev":true},{"id":"C14","seg":1,"a":35.0,"b":44.0},{"id":"C19","seg":2,"a":0.0,"b":7.0},{"id":"C20","seg":2,"a":7.0,"b":12.375}]};                    // the apartment walkthrough: segments (video files) and the 20 clips as ranges inside them
+  var WALK = {"segs":[{"file":"walk1.mp4","rfile":"walk1r.mp4","frames":719,"dur":29.9583},{"file":"walk2.mp4","rfile":"walk2r.mp4","frames":1056,"dur":44.0},{"file":"walk3.mp4","rfile":"walk3r.mp4","frames":297,"dur":12.375}],"items":[{"id":"C01","seg":0,"a":0.0,"b":6.9583},{"id":"C02","seg":0,"a":6.9583,"b":10.9583},{"id":"C03","seg":0,"a":10.9583,"b":17.9583},{"id":"C04","seg":0,"a":17.9583,"b":24.9583},{"id":"C05","seg":0,"a":24.9583,"b":29.9583},{"id":"C06","seg":1,"a":0.0,"b":6.0},{"id":"C07","seg":1,"a":6.0,"b":11.0},{"id":"C08","seg":1,"a":11.0,"b":20.0},{"id":"C09","seg":1,"a":20.0,"b":25.0},{"id":"C10","seg":1,"a":25.0,"b":30.0},{"id":"C11","seg":1,"a":25.0,"b":29.9583,"rev":true},{"id":"C12","seg":1,"a":30.0,"b":35.0},{"id":"C13","seg":1,"a":30.0,"b":34.9583,"rev":true},{"id":"C14","seg":1,"a":35.0,"b":44.0},{"id":"C19","seg":2,"a":0.0,"b":7.0},{"id":"C20","seg":2,"a":7.0,"b":12.375}]};                    // the apartment walkthrough: segments (video files) and the 20 clips as ranges inside them
   var WV = [], WR = [];                           // per segment: the video file, and the same file played backwards
   if (WALK) ["F", "R"].forEach(function (kind) {
     WALK.segs.forEach(function (sg, i) {          // stacked just above the unit-8 clip; the files load only once someone opens the unit
@@ -766,19 +766,27 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
 
   // ---- Level 30, unit 8: clip 1 (push-in to the top of the tower), then ONE joined clip (stage12): A3 straight in to the facade centre, D2 through the closed glass into a living room,
   //      E1 zoom out into the 110 m2 plan on white. One video, no hand-offs between the three, so the move never pauses. ----
-  var UE0 = 145 / 24;                               // where the zoom-out into the plan starts inside stage12 (seconds)
+  // stage12 is four pieces joined end to end (14.75 s): the push to the facade close-up and the push in on the window (T1), the pass through the glass into the living room (T1 to T2),
+  // and the lift out of the room to the plan on white (T2 to the end). They are generated at normal speed and played faster here.
+  var T1 = 175 / 24, T2 = 251 / 24;                 // where the pass through the glass starts, and where the lift to the plan starts (seconds in the file)
+  var WHITE_AT = T2 + 1.3;                          // the background has gone white from here (the logo turns dark)
+  var PLAIN_AT = T2 + 2.0;                          // and the picture's edges are plain white from here (the side strips just continue it)
   var FLY1 = 4.2;                                   // speed of clip 1 on this journey (1 = natural)
-  var FRATE = 3.8, FEND = 2.4;                      // speed of the joined clip, and the speed it eases down to as the plan settles (1 = natural, 8.8 s)
+  var R_PUSH = 6.0, R_GLASS = 3.0, R_LIFT = 3.5;    // playback speed of the three parts (1 = natural)
   var s5 = new Scrubber(v5);
-  function fdur() { return v5.duration || 8.79; }
-  function frate(t) { var k = Math.max(0, Math.min(1, (t - (UE0 + 1.0)) / (fdur() - UE0 - 1.0))); k = k * k * (3 - 2 * k); return FRATE + (FEND - FRATE) * k; }
+  function fdur() { return v5.duration || 14.75; }
+  function frate(t) {                              // speed follows the part of the clip we are in, with a short ease at each join
+    function sm(x) { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); }
+    var w = 0.5, k1 = sm((t - (T1 - w)) / (2 * w)), k2 = sm((t - (T2 - w)) / (2 * w));
+    return R_PUSH + (R_GLASS - R_PUSH) * k1 + (R_LIFT - R_GLASS) * k2;
+  }
   function setWhite(on) { ui.classList.toggle("white", !!on); }
 
   function goFloor() {
     if (mode !== "hub") return;
     mode = "play"; atTop = false; var my = ++token; wLoad();
     setBand(null); shade.classList.add("dim"); ui.classList.add("hide");
-    v1.pause(); v5.pause(); v1.playbackRate = FLY1; v5.playbackRate = FRATE;
+    v1.pause(); v5.pause(); v1.playbackRate = FLY1; v5.playbackRate = R_PUSH;
     Promise.all([seekTo(v1, 0), seekTo(v5, 0)]).then(function () {
       if (my !== token) return;
       v1.style.opacity = 1; var pr = v1.play(); if (pr && pr.catch) pr.catch(function () {});
@@ -793,7 +801,7 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
           }
           requestAnimationFrame(loop); return;
         }
-        dirty = true; var t = v5.currentTime; v5.playbackRate = frate(t); setWhite(t > UE0 + 0.9);
+        dirty = true; var t = v5.currentTime; v5.playbackRate = frate(t); setWhite(t > WHITE_AT);
         if (t < fdur() - 0.04 && !v5.ended) { requestAnimationFrame(loop); return; }
         v5.pause(); v1.pause(); mode = "floor"; backBtn.classList.add("on"); wStart();
       })();
@@ -811,14 +819,14 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
     wLive = false; wCue(false);
     mode = "play"; var my = ++token, uiBack = false; scrubbing = true; backBtn.classList.remove("on");
     v1.pause(); v5.pause();
-    var d5 = fdur(), BR = 4.0, w5 = d5 / BR, w1 = D1 / FLY1, t0 = performance.now();
+    var d5 = fdur(), BR = 4.5, w5 = d5 / BR, w1 = D1 / FLY1, t0 = performance.now();
     s5.want = d5 - 0.03; s1.want = D1 - 0.03;                          // so the scrub helper never pulls a clip back to an old target
     (function loop(now) {
       if (my !== token) return;
       var u = Math.max(0, w5 + w1 - (now - t0) / 1000);                // seconds of wall-clock left
       if (u > w1) {                                                    // first: the joined clip, backwards
         var tt = Math.min((u - w1) * BR, d5 - 0.03);
-        v5.style.opacity = 1; s5.seek(tt); v2.style.opacity = 0; dirty = true; setWhite(tt > UE0 + 0.9);
+        v5.style.opacity = 1; s5.seek(tt); v2.style.opacity = 0; dirty = true; setWhite(tt > WHITE_AT);
       } else {                                                         // then clip 1, backwards, down to the whole building
         var t = u * FLY1; v5.style.opacity = 0; setWhite(false); show(t / TOTAL); s1.seek(Math.min(t, D1)); v2.style.opacity = 0;
         if (t < D1 * 0.5 && !uiBack) { uiBack = true; shade.classList.remove("dim"); ui.classList.remove("hide"); }
@@ -1105,7 +1113,7 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
     if (OX <= 0.5) { sideL.style.display = sideR.style.display = "none"; return; }
     sideL.style.display = sideR.style.display = "block";
     var srcEl = atTop ? tower : (+v8.style.opacity > 0 ? v8 : +v6.style.opacity > 0 ? v6 : wActive() ? wActive() : mode === "floor" || +v5.style.opacity > 0 ? v5 : mode === "toppl" || mode === "top" ? (+v3.style.opacity > 0 ? v3 : tower) : (T >= D1 ? v2 : v1));
-    var src = frameFor(srcEl) || tower, plain = (srcEl === v5 && v5.currentTime > UE0 + 1.5) || (WA.indexOf(srcEl) >= 0 && edgePlain(src));   // the plan: its sides continue the plain background (mirroring would repeat the plan's own walls)
+    var src = frameFor(srcEl) || tower, plain = (srcEl === v5 && v5.currentTime > PLAIN_AT) || (WA.indexOf(srcEl) >= 0 && edgePlain(src));   // the plan: its sides continue the plain background (mirroring would repeat the plan's own walls)
     var dpr = Math.min(window.devicePixelRatio || 1, 2), pad = 40, FP = 100, sw = Math.ceil(OX) + pad + FP + 3;   // strips reach past the window edge and under the picture's faded edge
     [[sideL, -pad, OX + pad, OX + pad], [sideR, OX + W - FP - 3, W + FP + 3, FP + 3 - W]].forEach(function (a) {
       var c = a[0], ctx = c.getContext("2d");

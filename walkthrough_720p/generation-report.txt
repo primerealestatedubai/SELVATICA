@@ -26,15 +26,15 @@ C02  02 -> 03
     defects: none
 
 C03  03 -> 04 (corrected frame)
-    requested length: 8 s   attempts generated: 6   selected: a6
+    requested length: 7 s   attempts generated: 6   selected: a5
     a1: job c3c065a4-2f5a-4096-973c-1712e09102a1   end match 0.757
     a2: job 69a6441b-4b0e-42ab-bdbc-b0811b7f6c80   end match 0.737
     a3: job 299715c4-38d6-4c77-900e-72306e123445   end match 0.850
     a4: job 30723cf5-d484-40ac-8f7a-5bb2d9b3b828   end match 0.832
-    a5: job 889e22ec-f4b1-4315-9666-a352cbec1898   end match generated, not reviewed (a6 had already matched)
+    a5: job 889e22ec-f4b1-4315-9666-a352cbec1898   end match 0.882
     a6: job 83272974-a129-4753-a365-85ec84c6f1fe   end match 0.987
     resolution: 1280 x 720
-    defects: none. Regenerated against the corrected closer dining frame because the dining chairs appeared to move in the first version. The short attempts stopped before the closer frame; the 8 s attempt reaches it, and the six chairs, the table and the bowl stay put. Three earlier attempts toward the original image 04 (jobs 8ab63875-de30-44d8-a8e9-9e321c9a44fc, ea561b27-a2b5-4035-b2b4-a772d763e585, 4789d34c-064d-4efc-ae60-b663fb0dbe69) are superseded.
+    defects: Ends a little further from the closer dining frame than a6 (match 0.88 against 0.99); the join to C04 is a small step, not a cut. Regenerated against the corrected closer dining frame because the dining chairs appeared to move in the first version; the chairs, table and bowl stay put. A5 (7 s) was chosen by the client. Three earlier attempts toward the original image 04 (jobs 8ab63875-de30-44d8-a8e9-9e321c9a44fc, ea561b27-a2b5-4035-b2b4-a772d763e585, 4789d34c-064d-4efc-ae60-b663fb0dbe69) are superseded.
 
 C04  04 (corrected frame) -> 05
     requested length: 7 s   attempts generated: 3   selected: a3
@@ -150,6 +150,13 @@ C20  02 -> 01
     a2: job e5621e47-8865-472d-9954-12bc86023319   end match 0.996
     resolution: 1280 x 720
     defects: none (a1 chosen: steadier). Generated on its own; not a reversal of C01.
+
+Facade-to-plan flight (the move that opens the walkthrough from unit 8 on level 30; not one of the 20 clips): generated in steps because a single facade-to-plan clip came out as a fade.
+    pieces: A3 (tower top to the facade close-up, 1080p, earlier) + push-in on the middle window (job f3a031ad-aa4e-47e8-b511-81ae1c3efe98, no end frame, 5 s)
+            + pass through the glass into the living room (job 04b20c5d-d1ae-4de1-81f4-e14791cafd87, 4 s, from the push-in last frame to the supplied interior image)
+            + lift out of the room to the furnished plan (job 0f90b7d6-d8c9-4231-af76-7cd328964b11, 5 s, from the interior image to plan 01). Earlier glass-pass and lift attempts that were not used: jobs 1ecb3231-fffc-426c-a1a9-6a5d4a05c6c5, e959284b-2399-49ff-8fc5-2013096f0971, 7f7f5935-158b-4bce-bd59-05ffe57165d8; short push-in retries 95b96bbf-8ba2-4c4b-9b44-da6055e110e6 and e773d3bc-feb5-48d1-9445-c5c306142504.
+    Joined at 1.1x into stage12.mp4: 1280 x 720, 24 fps, 14.75 s, played on the page at 6x, 3x and 3.5x (about 3.5 s). Clips: Flight/Facade_to_plan_720p.mp4.
+    Known defect: in the push-in the hanging planter in front of the middle window slides about 250 px to the right in the first 1.5 s (the model moves it out of the way). Two 3 s retries made it worse. Fixing it needs a new push-in aimed at a window with no planter in front.
 
 Assembly: selected clips in C01-C20 order; the first frame of every clip after C01 is dropped (it repeats the previous end frame); the idle opening
 frames of C01 and the idle closing frames of C20 are trimmed; no dissolves anywhere. Master (current flow, without C15-C18): 1280 x 720, 24 fps, 92.2 s, H.264.

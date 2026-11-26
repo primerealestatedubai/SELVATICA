@@ -17,7 +17,7 @@ cd site && python3 -m http.server 8765
 | Click the **rooftop** (top level) | Clip 1 pushes in to the top of the tower, clip 2 swings to the corner view of the rooftop amenities. **Back** (or Esc) plays it in reverse. |
 | **Show top view** (on the corner view) | Clip 3 tips the view straight down onto the plan. The **Top floor** plan shows first, with a **Main floor / Top floor** switch (cross-fade). Hover an area to see its name. **Back to corner view** reverses it (from the main floor it settles on the top floor first). |
 | Hover the spot by the **fire pit** (rooftop corner view) | A glass label says "Click to explore". Clicking glides the camera down to the terrace and spiral staircase (clip 7). On that view, **scrolling** (wheel, touch drag or arrow keys) turns the camera to the infinity pool (clip 8). **Back** eases the scroll to the start, then reverses clip 7. |
-| Hover **level 30**, then click **unit 8** in the card's map | Clip 1 pushes in to the top of the tower, then one joined clip (`stage12`) goes straight in at the facade centre, through the closed glass into a living room and zooms out onto the 110 m² plan on white. It plays as one move (about 3 s) and stops on the plan. **Back** reverses it. |
+| Hover **level 30**, then click **unit 8** in the card's map | Clip 1 pushes in to the top of the tower, then one joined clip (`stage12`, 14.75 s, played at 6x, 3x and 3.5x for about 3.5 s) goes in on a window of the facade, passes through the glass into a living room and lifts out to the 110 m² plan on white. It stops on the plan. **Back** reverses it. |
 | **Scroll** on the plan | Walks through the apartment: 16 clips, plan > living > dining > balcony > kitchen > living > hallway > master bedroom > closet > ensuite > hallway > living > plan. The second bedroom and the shared bathroom are left out for now. Scroll back to go back. The **Back** button disappears as soon as scrolling starts and returns at the start, or when the walkthrough has finished on the plan (Back then reverses the flight; Esc follows the same rule). Wheel, touch drag and arrow keys work; Space / Page Down glides to the next clip. |
 
 ## Files
@@ -36,7 +36,7 @@ site/
   stage3.mp4          clip 3: corner view to the straight-down top view   (1080p, 4 s)
   stage7.mp4          clip 7: rooftop corner view to the terrace / staircase (1080p, 5 s)
   stage8.mp4          clip 8: terrace to the pool, scrubbed by scrolling   (720p enlarged, 5 s)
-  stage12.mp4         unit 8 flight: facade centre, through the glass, living room, plan on white (1080p, 8.8 s)
+  stage12.mp4         unit 8 flight: push-in on a window, through the glass, living room, lift to the plan on white (720p, 14.75 s)
   walk1.mp4 ..3       the apartment walkthrough, 720p (1280 x 720), 3 files so each stays small; see below
   walk1r.mp4 ..3r     the same three files played backwards (so scrolling back also plays natively)
 tools/                helper scripts used while making the clips (see below)
@@ -63,8 +63,8 @@ The values in the file now are **random placeholders** (2 or 3 per level).
 | --- | --- |
 | `RATE` | Playback speed of the rooftop flight (3.2 = about 2 s). |
 | `RATE3` | Speed of the top-view clip. |
-| `FLY1`, `FRATE`, `FEND` | Speed of clip 1 on the unit 8 journey, of the joined clip, and the speed it eases down to as the plan settles. |
-| `WALK_PX`, `W_RMAX` | Scroll distance per second of walkthrough footage (110; the whole walkthrough is about 97 s), and the fastest the footage plays while catching up with the scroll (4). |
+| `FLY1`, `R_PUSH`, `R_GLASS`, `R_LIFT` | Speed of clip 1 on the unit 8 journey, and of the three parts of the joined clip (the push-in, the pass through the glass, the lift to the plan). `T1`, `T2`, `WHITE_AT` and `PLAIN_AT` say where those parts start inside `stage12.mp4`. |
+| `WALK_PX`, `W_RMAX` | Scroll distance per second of walkthrough footage (110; the whole walkthrough is about 96 s), and the fastest the footage plays while catching up with the scroll (4). |
 | `RATE6` | Speed of the terrace glide (4.2 = about 1.2 s). |
 | `SCROLL_PX` | Wheel distance for the whole pool clip (1500). |
 | `SPOT` | Centre and size of the fire pit hover spot, as fractions of the rooftop picture. |
@@ -86,6 +86,10 @@ The values in the file now are **random placeholders** (2 or 3 per level).
 - Floor plans, Available units and booking actions are not built yet (the side menu was removed).
 - Clip 8 is 720p enlarged to 1920x1080; upscale it to 1080p for full sharpness. The walkthrough is deliberately 720p.
 - The pool view (end of the scroll) is the last stop so far; more clips are to follow.
+
+## The unit 8 flight
+
+`stage12.mp4` is four pieces joined end to end at 1.1x: the push to the facade close-up (A3), a push-in on one window, the pass through the glass into a living room (ending on the supplied interior image) and the lift out of that room to the furnished plan (`01`). A single facade-to-plan clip always came out as a fade, so each step has a real start and end frame. Known defect: in the push-in a hanging planter in front of the middle window slides about 250 px to the right in the first 1.5 s; fixing it needs a new push-in aimed at a window with no planter in front. The pieces and their job ids are in `walkthrough_720p/generation-report.txt`; the joined clip is `walkthrough_720p/Flight/Facade_to_plan_720p.mp4`.
 
 ## The apartment walkthrough (720p)
 

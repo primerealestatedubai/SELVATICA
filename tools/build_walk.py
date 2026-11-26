@@ -2,9 +2,9 @@ import subprocess, json, os, sys, numpy as np, shutil
 W=os.environ.get('WALK_DIR','walk')
 SITE=os.environ.get('SITE_DIR','site')
 SEL=json.load(open(W+'/selected.json'))
-UNIQUE=['C01','C02','C03','C04','C05','C06','C07','C08','C09','C10','C12','C14','C15','C17','C19','C20']
+UNIQUE=['C01','C02','C03','C04','C05','C06','C07','C08','C09','C10','C12','C14','C19','C20']   # C15-C18 (second bedroom, shared bathroom) are generated but left out of the flow for now
 TIMELINE=[('C01',None),('C02',None),('C03',None),('C04',None),('C05',None),('C06',None),('C07',None),('C08',None),('C09',None),('C10',None),
-          ('C11','C10'),('C12',None),('C13','C12'),('C14',None),('C15',None),('C16','C15'),('C17',None),('C18','C17'),('C19',None),('C20',None)]
+          ('C11','C10'),('C12',None),('C13','C12'),('C14',None),('C19',None),('C20',None)]
 FPS=24
 def sh(*a): subprocess.run(a,check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 def gray_frames(path):

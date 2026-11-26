@@ -18,7 +18,7 @@ cd site && python3 -m http.server 8765
 | **Show top view** (on the corner view) | Clip 3 tips the view straight down onto the plan. The **Top floor** plan shows first, with a **Main floor / Top floor** switch (cross-fade). Hover an area to see its name. **Back to corner view** reverses it (from the main floor it settles on the top floor first). |
 | Hover the spot by the **fire pit** (rooftop corner view) | A glass label says "Click to explore". Clicking glides the camera down to the terrace and spiral staircase (clip 7). On that view, **scrolling** (wheel, touch drag or arrow keys) turns the camera to the infinity pool (clip 8). **Back** eases the scroll to the start, then reverses clip 7. |
 | Hover **level 30**, then click **unit 8** in the card's map | Clip 1 pushes in to the top of the tower, then one joined clip (`stage12`) goes straight in at the facade centre, through the closed glass into a living room and zooms out onto the 110 m² plan on white. It plays as one move (about 3 s) and stops on the plan. **Back** reverses it. |
-| **Scroll** on the plan | Walks through the apartment: 20 clips, plan > living > dining > balcony > kitchen > living > hallway > master bedroom > closet > ensuite > hallway > second bedroom > shared bathroom > living > plan. Scroll back to go back; **Back** eases the scroll to the start, then reverses the flight. Wheel, touch drag and arrow keys work; Space / Page Down glides to the next clip. |
+| **Scroll** on the plan | Walks through the apartment: 16 clips, plan > living > dining > balcony > kitchen > living > hallway > master bedroom > closet > ensuite > hallway > living > plan. The second bedroom and the shared bathroom are left out for now. Scroll back to go back. The **Back** button disappears as soon as scrolling starts and returns at the start, or when the walkthrough has finished on the plan (Back then reverses the flight; Esc follows the same rule). Wheel, touch drag and arrow keys work; Space / Page Down glides to the next clip. |
 
 ## Files
 
@@ -88,13 +88,13 @@ The values in the file now are **random placeholders** (2 or 3 per level).
 
 ## The apartment walkthrough (720p)
 
-Made from the 15 approved stills (`01`..`15`) with Higgsfield `cinematic_studio_video_v2`, 1280 x 720, start and end image per clip, no upscaling. The timeline is
+Made from the approved stills (`01`..`15`) with Higgsfield `cinematic_studio_video_v2`, 1280 x 720, start and end image per clip, no upscaling. Image `12` is the corrected bathroom frame. The flow on the page is
 
 ```text
-01 > 02 > 03 > 04 > 05 > 06 > 07 > 08 > 09 > 10 > 11 > 10 > 12 > 10 > 13 > 14 > 13 > 15 > 13 > 02 > 01
+01 > 02 > 03 > 04 > 05 > 06 > 07 > 08 > 09 > 10 > 11 > 10 > 12 > 10 > 13 > 02 > 01
 ```
 
-Sixteen clips were generated (C01 to C10, C12, C14, C15, C17, C19, C20). The four returns C11, C13, C16 and C18 are the outbound clips C10, C12, C15 and C17 played backwards (checked: it backs out along the same path, the door swings shut, and the endpoints are exact). On the page, the clips sit one after another inside `walk1.mp4` to `walk3.mp4`, and the list of ranges (the `WALK` object near the top of the script) says where each clip starts and ends and which ones play backwards. `tools/build_walk.py` rebuilds the three files and that list from the selected clips. `walkthrough_720p/generation-report.txt` lists every clip's endpoints, attempts, the attempt chosen and any open defects.
+Sixteen clips were generated (C01 to C10, C12, C14, C15, C17, C19, C20). The returns C11 and C13 are the outbound clips C10 and C12 played backwards (checked: it backs out along the same path and the endpoints are exact). The second bedroom and the shared bathroom (C15 to C18) are generated and kept in `walkthrough_720p/Selected clips`, but they are **left out of the flow for now**: to add them back, list them in `UNIQUE` and `TIMELINE` in `tools/build_walk.py` and rebuild. On the page, the clips sit one after another inside `walk1.mp4` to `walk3.mp4`, and the list of ranges (the `WALK` object near the top of the script) says where each clip starts and ends and which ones play backwards. `tools/build_walk.py` rebuilds those files and that list from the selected clips. `walkthrough_720p/generation-report.txt` lists every clip's endpoints, attempts, the attempt chosen and any open defects.
 
 ## Regenerating a clip
 

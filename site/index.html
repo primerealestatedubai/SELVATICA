@@ -367,7 +367,7 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
   var v8 = document.getElementById("v8"), v6 = document.getElementById("v6"), v5 = document.getElementById("v5"), v3 = document.getElementById("v3"), planMain = document.getElementById("planMain"), planTop = document.getElementById("planTop"), areasSvg = document.getElementById("areas");
   var v1 = document.getElementById("v1"), v2 = document.getElementById("v2"), sideL = document.getElementById("sideL"), sideR = document.getElementById("sideR");
   var glass = document.getElementById("glass");
-  var WALK = {"segs":[{"file":"walk1.mp4","dur":30.958},{"file":"walk2.mp4","dur":48.0},{"file":"walk3.mp4","dur":21.375}],"items":[{"id":"C01","seg":0,"a":0.0,"b":6.9583},{"id":"C02","seg":0,"a":6.9583,"b":10.9583},{"id":"C03","seg":0,"a":10.9583,"b":14.9583},{"id":"C04","seg":0,"a":14.9583,"b":19.9583},{"id":"C05","seg":0,"a":19.9583,"b":24.9583},{"id":"C06","seg":0,"a":24.9583,"b":30.9583},{"id":"C07","seg":1,"a":0.0,"b":5.0},{"id":"C08","seg":1,"a":5.0,"b":15.0},{"id":"C09","seg":1,"a":15.0,"b":20.0},{"id":"C10","seg":1,"a":20.0,"b":25.0},{"id":"C11","seg":1,"a":20.0,"b":24.9583,"rev":true},{"id":"C12","seg":1,"a":25.0,"b":30.0},{"id":"C13","seg":1,"a":25.0,"b":29.9583,"rev":true},{"id":"C14","seg":1,"a":30.0,"b":39.0},{"id":"C15","seg":1,"a":39.0,"b":48.0},{"id":"C16","seg":1,"a":39.0,"b":47.9583,"rev":true},{"id":"C17","seg":2,"a":0.0,"b":9.0},{"id":"C18","seg":2,"a":0.0,"b":8.9583,"rev":true},{"id":"C19","seg":2,"a":9.0,"b":16.0},{"id":"C20","seg":2,"a":16.0,"b":21.375}]};                    // the apartment walkthrough: segments (video files) and the 20 clips as ranges inside them
+  var WALK = {"segs":[{"file":"walk1.mp4","dur":30.958},{"file":"walk2.mp4","dur":46.0},{"file":"walk3.mp4","dur":5.375}],"items":[{"id":"C01","seg":0,"a":0.0,"b":6.9583},{"id":"C02","seg":0,"a":6.9583,"b":10.9583},{"id":"C03","seg":0,"a":10.9583,"b":14.9583},{"id":"C04","seg":0,"a":14.9583,"b":19.9583},{"id":"C05","seg":0,"a":19.9583,"b":24.9583},{"id":"C06","seg":0,"a":24.9583,"b":30.9583},{"id":"C07","seg":1,"a":0.0,"b":5.0},{"id":"C08","seg":1,"a":5.0,"b":15.0},{"id":"C09","seg":1,"a":15.0,"b":20.0},{"id":"C10","seg":1,"a":20.0,"b":25.0},{"id":"C11","seg":1,"a":20.0,"b":24.9583,"rev":true},{"id":"C12","seg":1,"a":25.0,"b":30.0},{"id":"C13","seg":1,"a":25.0,"b":29.9583,"rev":true},{"id":"C14","seg":1,"a":30.0,"b":39.0},{"id":"C19","seg":1,"a":39.0,"b":46.0},{"id":"C20","seg":2,"a":0.0,"b":5.375}]};                    // the apartment walkthrough: segments (video files) and the 20 clips as ranges inside them
   var WV = [];
   if (WALK) WALK.segs.forEach(function (sg, i) {  // one <video> per segment, stacked just above the unit-8 clip; the files load only once someone opens the unit
     var el = document.createElement("video"); el.className = "vid"; el.id = "w" + i; el.muted = true; el.preload = "none"; el.setAttribute("playsinline", ""); el.setAttribute("aria-hidden", "true"); el.setAttribute("data-src", sg.file);
@@ -797,7 +797,9 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
   }
   function backFloor() {
     if (mode !== "floor") return;
-    if (wLive && (wT > 0 || wC > 0.002)) {          // somewhere in the walkthrough: ease back to the plan first, then reverse the flight
+    if (wLive && wT > 0.996 && wC > 0.996) {        // finished: the last picture is the plan again, so go straight back
+      wT = wC = 0; WV.forEach(function (x) { x.style.opacity = 0; }); wShown = -1; v5.style.opacity = 1; dirty = true;
+    } else if (wLive && (wT > 0 || wC > 0.002)) {   // somewhere in the walkthrough: ease back to the plan first, then reverse the flight
       mode = "wback"; wT = 0; wBack = true; backBtn.classList.remove("on"); wCue(false);
       (function settle() { if (wC > 0.003) { requestAnimationFrame(settle); return; } wC = 0; wBack = false; mode = "floor"; backFloor(); })();
       return;
@@ -825,7 +827,7 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
     })(t0);
   }
 
-  // ---- The apartment walkthrough. On the plan, scrolling (wheel, touch drag or arrow keys) walks through the apartment: 20 clips, 01 > 02 > ... > 10 > 11 > 10 > 12 > 10 > 13 > 14 > 13 > 15 > 13 > 02 > 01.
+  // ---- The apartment walkthrough. On the plan, scrolling (wheel, touch drag or arrow keys) walks through the apartment: 16 clips, 01 > 02 > ... > 10 > 11 > 10 > 12 > 10 > 13 > 02 > 01 (the second bedroom and the shared bathroom are left out for now).
   //      The clips sit one after another inside a few video files (WALK.segs). A clip marked rev is a clip played backwards (the way back out of a room). ----
   var WALK_PX = 110;                                // scroll distance per second of footage
   var WS = WV.map(function (v) { return new Scrubber(v); });
@@ -860,6 +862,10 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
       dirty = true;
     } else if (wShown >= 0) {                       // back at the very start: the plan from the flight is showing again
       WV.forEach(function (x) { x.style.opacity = 0; }); wShown = -1; v5.style.opacity = 1; dirty = true;
+    }
+    if (mode === "floor") {
+      var atStart = wT < 0.003 && wC < 0.003, atEnd = wT > 0.997 && wC > 0.997;   // the picture is the plan at both ends
+      backBtn.classList.toggle("on", atStart || atEnd);
     }
     if (mode === "floor") { if (wT > 0.01) scrollCue.classList.remove("on"); else if (!scrollCue.classList.contains("on") && wC < 0.002 && scrollCue.classList.contains("dark")) scrollCue.classList.add("on"); }
     requestAnimationFrame(wTick);
@@ -1076,7 +1082,7 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
     if (b && b.kind === "roof") go();
   });
   backBtn.addEventListener("click", function () { if (mode === "floor") backFloor(); else if (mode === "spot") backSpot(); else back(); });
-  window.addEventListener("keydown", function (e) { if (e.key === "Escape") { if (mode === "top") backCorner(); else if (mode === "floor") backFloor(); else if (mode === "spot") backSpot(); else back(); } });
+  window.addEventListener("keydown", function (e) { if (e.key === "Escape") { if (mode === "top") backCorner(); else if (mode === "floor") { if (backBtn.classList.contains("on")) backFloor(); } else if (mode === "spot") backSpot(); else back(); } });
   window.addEventListener("touchstart", function prime() { // iOS only lets a video decode after a touch
     [v1, v2, v3, v5, v6, v8].concat(WV).forEach(function (v) { var pr = v.play(); if (pr && pr.then) pr.then(function () { v.pause(); }).catch(function () {}); });
     window.removeEventListener("touchstart", prime);

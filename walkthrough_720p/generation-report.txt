@@ -25,19 +25,24 @@ C02  02 -> 03
     resolution: 1280 x 720
     defects: none
 
-C03  03 -> 04
-    requested length: 4 s   attempts generated: 3   selected: a3
-    a1: job 8ab63875-de30-44d8-a8e9-9e321c9a44fc   end match 0.842
-    a2: job ea561b27-a2b5-4035-b2b4-a772d763e585   end match 0.835
-    a3: job 4789d34c-064d-4efc-ae60-b663fb0dbe69   end match 0.925
+C03  03 -> 04 (corrected frame)
+    requested length: 8 s   attempts generated: 6   selected: a6
+    a1: job c3c065a4-2f5a-4096-973c-1712e09102a1   end match 0.757
+    a2: job 69a6441b-4b0e-42ab-bdbc-b0811b7f6c80   end match 0.737
+    a3: job 299715c4-38d6-4c77-900e-72306e123445   end match 0.850
+    a4: job 30723cf5-d484-40ac-8f7a-5bb2d9b3b828   end match 0.832
+    a5: job 889e22ec-f4b1-4315-9666-a352cbec1898   end match generated, not reviewed (a6 had already matched)
+    a6: job 83272974-a129-4753-a365-85ec84c6f1fe   end match 0.987
     resolution: 1280 x 720
-    defects: Ends a little further from the table than image 04 (best of three; the join to C04 is a small step, not a cut).
+    defects: none. Regenerated against the corrected closer dining frame because the dining chairs appeared to move in the first version. The short attempts stopped before the closer frame; the 8 s attempt reaches it, and the six chairs, the table and the bowl stay put. Three earlier attempts toward the original image 04 (jobs 8ab63875-de30-44d8-a8e9-9e321c9a44fc, ea561b27-a2b5-4035-b2b4-a772d763e585, 4789d34c-064d-4efc-ae60-b663fb0dbe69) are superseded.
 
-C04  04 -> 05
-    requested length: 5 s   attempts generated: 1   selected: a1
-    a1: job 317d61e0-d401-45e0-8be0-c5348ea51666   end match 0.991
+C04  04 (corrected frame) -> 05
+    requested length: 7 s   attempts generated: 3   selected: a3
+    a1: job 02a76efb-14d8-43ad-a833-09574ad868a7   end match 0.994
+    a2: job 81d12f1e-2e5c-4c31-a883-cfe4044d782b   end match 0.993
+    a3: job 94ed6908-efd0-4744-92be-730ad90cbdff   end match 0.994
     resolution: 1280 x 720
-    defects: none
+    defects: none. Regenerated from the corrected closer dining frame so that the balcony door opens like a real sliding door: the right-hand glass panel slides left along its track, about half way and then all the way, and stacks at the left edge; the glass stays solid, no cross-fade. A3 (7 s) chosen: steadiest, with the clearest slide. The earlier attempt toward the original image 04 (job 317d61e0-d401-45e0-8be0-c5348ea51666) is superseded.
 
 C05  05 -> 06
     requested length: 5 s   attempts generated: 1   selected: a1

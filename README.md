@@ -64,7 +64,7 @@ The values in the file now are **random placeholders** (2 or 3 per level).
 | `RATE` | Playback speed of the rooftop flight (3.2 = about 2 s). |
 | `RATE3` | Speed of the top-view clip. |
 | `FLY1`, `FRATE`, `FEND` | Speed of clip 1 on the unit 8 journey, of the joined clip, and the speed it eases down to as the plan settles. |
-| `WALK_PX`, `W_RMAX` | Scroll distance per second of walkthrough footage (110; the whole walkthrough is about 91 s), and the fastest the footage plays while catching up with the scroll (4). |
+| `WALK_PX`, `W_RMAX` | Scroll distance per second of walkthrough footage (110; the whole walkthrough is about 97 s), and the fastest the footage plays while catching up with the scroll (4). |
 | `RATE6` | Speed of the terrace glide (4.2 = about 1.2 s). |
 | `SCROLL_PX` | Wheel distance for the whole pool clip (1500). |
 | `SPOT` | Centre and size of the fire pit hover spot, as fractions of the rooftop picture. |

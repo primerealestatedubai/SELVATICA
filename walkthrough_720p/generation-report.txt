@@ -1,0 +1,147 @@
+Selvatica apartment walkthrough: generation report
+
+Model: Higgsfield cinematic_studio_video_v2 (std, sound off, linear speed ramp, cfg 0.9-0.95), start image + end image per clip.
+Output checked on every clip: 1280 x 720, 24 fps, landscape 16:9. Nothing was upscaled (generation, assembly, optimisation or deployment).
+Inputs: the 15 supplied stills 01-15, resized to 1280 x 720 copies (the sources are within 0.1% of 16:9). No extra stills were generated.
+Timeline (20 clips, 21 positions): 01 > 02 > 03 > 04 > 05 > 06 > 07 > 08 > 09 > 10 > 11 > 10 > 12 > 10 > 13 > 14 > 13 > 15 > 13 > 02 > 01
+
+Sixteen clips were generated. Four returns (C11, C13, C16, C18) are the outbound clip played backwards; each was inspected frame by frame:
+the camera backs out along the same path, the door swings shut after the camera has cleared it, and the end frame is the exact start frame of the outbound clip.
+C20 (plan return) was generated separately because it came out cleaner than a reversed C01.
+"End match" is the structural similarity (SSIM, 1.0 = identical) between the last frame and the target still; every first frame matched its start still at 0.987 or better.
+The attempt limit was three per clip. No clip needed more; no clip is missing.
+
+C01  01 -> 02
+    requested length: 7 s   attempts generated: 1   selected: a2
+    a1: not generated: submission refused by the 6-job limit
+    a2: job 346e1d96-b055-402c-be75-6ece90e5c461   end match 0.976
+    resolution: 1280 x 720
+    defects: none
+
+C02  02 -> 03
+    requested length: 4 s   attempts generated: 1   selected: a1
+    a1: job f22b4583-2e6d-4355-aec7-397e3fd03e2f   end match 0.985
+    resolution: 1280 x 720
+    defects: none
+
+C03  03 -> 04
+    requested length: 4 s   attempts generated: 3   selected: a3
+    a1: job 8ab63875-de30-44d8-a8e9-9e321c9a44fc   end match 0.842
+    a2: job ea561b27-a2b5-4035-b2b4-a772d763e585   end match 0.835
+    a3: job 4789d34c-064d-4efc-ae60-b663fb0dbe69   end match 0.925
+    resolution: 1280 x 720
+    defects: Ends a little further from the table than image 04 (best of three; the join to C04 is a small step, not a cut).
+
+C04  04 -> 05
+    requested length: 5 s   attempts generated: 1   selected: a1
+    a1: job 317d61e0-d401-45e0-8be0-c5348ea51666   end match 0.991
+    resolution: 1280 x 720
+    defects: none
+
+C05  05 -> 06
+    requested length: 5 s   attempts generated: 1   selected: a1
+    a1: job 01985953-e236-451b-ae0b-344ec065587e   end match 0.964
+    resolution: 1280 x 720
+    defects: none
+
+C06  06 -> 07
+    requested length: 6 s   attempts generated: 3   selected: a3
+    a1: job 9767ca9c-c060-4c5c-88d5-7ee4f36a9f54   end match rejected: whip pan with heavy motion blur
+    a2: job f09d37b1-71f0-429a-9bb7-09cf6f0d923d   end match 0.985
+    a3: job fe948454-690e-4375-ab9a-f4b3a331cf64   end match 0.985
+    resolution: 1280 x 720
+    defects: On the way round the camera looks past the hallway door; no other defect (a3 chosen: smoothest turn).
+
+C07  07 -> 08
+    requested length: 5 s   attempts generated: 3   selected: a2
+    a1: job 7e425054-926d-4099-a01d-c80d01f47cd9   end match 0.833
+    a2: job 799a5371-84b5-490e-ba6d-5b3160e29457   end match 0.992
+    a3: job 0207f366-b751-447b-806a-6ab2f24f5428   end match 0.945
+    resolution: 1280 x 720
+    defects: none
+
+C08  08 -> 09
+    requested length: 10 s   attempts generated: 2   selected: a2
+    a1: job cfd91566-a3d2-4757-b528-499f8da577b1   end match rejected: view jumps to a different door/closet before the room
+    a2: job 2666f1f9-f1ce-4f37-b45c-955c8b89ab4d   end match 0.991
+    resolution: 1280 x 720
+    defects: The door opens and the camera slips past its edge with some blur before turning left in the bedroom.
+
+C09  09 -> 10
+    requested length: 5 s   attempts generated: 1   selected: a1
+    a1: job ea08231a-fac1-436d-bcd4-fd54275711c0   end match 0.985
+    resolution: 1280 x 720
+    defects: Brief motion blur on the window as the sweep starts.
+
+C10  10 -> 11
+    requested length: 5 s   attempts generated: 1   selected: a1
+    a1: job 28170c84-cb4a-4618-9761-43751827c1a8   end match 0.921
+    resolution: 1280 x 720
+    defects: Ends slightly nearer the mirror than image 11.
+
+C11  11 -> 10
+    return clip: C10 played backwards (re-encoded at 1280 x 720)
+    resolution: 1280 x 720
+    defects: Return: C10 played backwards (checked: backs out along the same aisle, ends on the image 10 view).
+
+C12  10 -> 12
+    requested length: 5 s   attempts generated: 2   selected: a1
+    a1: job 35c7ae61-71dc-4f99-b42b-cc3b278a851c   end match 0.965
+    a2: job b86ad2da-9b07-4180-9e16-6cce6a133fc6   end match 0.784
+    resolution: 1280 x 720
+    defects: none
+
+C13  12 -> 10
+    return clip: C12 played backwards (re-encoded at 1280 x 720)
+    resolution: 1280 x 720
+    defects: Return: C12 played backwards (checked).
+
+C14  10 -> 13
+    requested length: 9 s   attempts generated: 2   selected: a2
+    a1: job a2d53cbc-dcac-44d8-97d8-0189a49f5802   end match 0.881
+    a2: job 73399b09-d3dd-4c87-a5f1-a7438344fc57   end match 0.991
+    resolution: 1280 x 720
+    defects: none
+
+C15  13 -> 14
+    requested length: 9 s   attempts generated: 2   selected: a2
+    a1: job f83cddfd-33df-41c3-a0b2-b9e6f1ae3554   end match 0.993
+    a2: job cf582757-eec8-467b-b1e3-6837b46f0afd   end match 0.993
+    resolution: 1280 x 720
+    defects: none (a2 chosen: steadier)
+
+C16  14 -> 13
+    return clip: C15 played backwards (re-encoded at 1280 x 720)
+    resolution: 1280 x 720
+    defects: Return: C15 played backwards (checked: the camera leaves through the same door and the door swings shut before the hallway view).
+
+C17  13 -> 15
+    requested length: 9 s   attempts generated: 2   selected: a2
+    a1: job b80b3703-1173-4191-bd99-59f9f771945e   end match 0.980
+    a2: job d22f0efb-5f50-4220-ba96-440018473fd9   end match 0.992
+    resolution: 1280 x 720
+    defects: none (a2 chosen: steadier)
+
+C18  15 -> 13
+    return clip: C17 played backwards (re-encoded at 1280 x 720)
+    resolution: 1280 x 720
+    defects: Return: C17 played backwards (checked).
+
+C19  13 -> 02
+    requested length: 7 s   attempts generated: 1   selected: a1
+    a1: job 53608210-726e-4a39-aaec-a8b339333428   end match 0.985
+    resolution: 1280 x 720
+    defects: none
+
+C20  02 -> 01
+    requested length: 6 s   attempts generated: 2   selected: a1
+    a1: job d7dfb0de-9304-48de-a12c-61295e020035   end match 0.996
+    a2: job e5621e47-8865-472d-9954-12bc86023319   end match 0.996
+    resolution: 1280 x 720
+    defects: none (a1 chosen: steadier). Generated on its own; not a reversal of C01.
+
+Assembly: selected clips in C01-C20 order; the first frame of every clip after C01 is dropped (it repeats the previous end frame); the idle opening
+frames of C01 and the idle closing frames of C20 are trimmed; no dissolves anywhere. Master: 1280 x 720, 24 fps, 128.2 s, H.264.
+
+Unresolved defects after the attempt limit: none that break a clip. Minor, listed above: C03 ends a little loose against image 04, C10 slightly close to image 11, C08 and C09 carry brief motion blur.
+Missing clips: none.

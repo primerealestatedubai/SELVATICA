@@ -2,14 +2,14 @@ Selvatica apartment walkthrough: generation report
 
 Model: Higgsfield cinematic_studio_video_v2 (std, sound off, linear speed ramp, cfg 0.9-0.95), start image + end image per clip.
 Output checked on every clip: 1280 x 720, 24 fps, landscape 16:9. Nothing was upscaled (generation, assembly, optimisation or deployment).
-Inputs: the 15 supplied stills 01-15, resized to 1280 x 720 copies (the sources are within 0.1% of 16:9). No extra stills were generated.
+Inputs: the 15 supplied stills 01-15, resized to 1280 x 720 copies (the sources are within 0.1% of 16:9). Image 12 was later replaced by a corrected bathroom frame supplied by the client. No extra stills were generated.
 Timeline (20 clips, 21 positions): 01 > 02 > 03 > 04 > 05 > 06 > 07 > 08 > 09 > 10 > 11 > 10 > 12 > 10 > 13 > 14 > 13 > 15 > 13 > 02 > 01
 
 Sixteen clips were generated. Four returns (C11, C13, C16, C18) are the outbound clip played backwards; each was inspected frame by frame:
 the camera backs out along the same path, the door swings shut after the camera has cleared it, and the end frame is the exact start frame of the outbound clip.
 C20 (plan return) was generated separately because it came out cleaner than a reversed C01.
 "End match" is the structural similarity (SSIM, 1.0 = identical) between the last frame and the target still; every first frame matched its start still at 0.987 or better.
-The attempt limit was three per clip. No clip needed more; no clip is missing.
+The attempt limit was three per clip for the same pair of images. No clip needed more; C12 was regenerated from scratch (three new attempts) when its end image was replaced. No clip is missing.
 
 C01  01 -> 02
     requested length: 7 s   attempts generated: 1   selected: a2
@@ -84,17 +84,18 @@ C11  11 -> 10
     resolution: 1280 x 720
     defects: Return: C10 played backwards (checked: backs out along the same aisle, ends on the image 10 view).
 
-C12  10 -> 12
-    requested length: 5 s   attempts generated: 2   selected: a1
-    a1: job 35c7ae61-71dc-4f99-b42b-cc3b278a851c   end match 0.965
-    a2: job b86ad2da-9b07-4180-9e16-6cce6a133fc6   end match 0.784
+C12  10 -> 12 (corrected frame)
+    requested length: 5 s   attempts generated: 3   selected: a1
+    a1: job 7f73346d-03d6-4a9c-bbc3-0ef7c56e336d   end match 0.947
+    a2: job 4d89ea26-8cdc-453a-8374-bd8271798982   end match 0.941
+    a3: job 2d4f7e8e-3543-49eb-8f99-86aa38d635ed   end match 0.987
     resolution: 1280 x 720
-    defects: none
+    defects: none. Regenerated after the client replaced image 12 with a corrected bathroom frame (the small bottles had moved in the first version). A1 was chosen by the client; the niche bottles, plant and dispenser stay still in all three. Two earlier attempts toward the original image 12 (jobs 35c7ae61-71dc-4f99-b42b-cc3b278a851c and b86ad2da-9b07-4180-9e16-6cce6a133fc6) are superseded.
 
-C13  12 -> 10
+C13  12 (corrected frame) -> 10
     return clip: C12 played backwards (re-encoded at 1280 x 720)
     resolution: 1280 x 720
-    defects: Return: C12 played backwards (checked).
+    defects: Return: the new C12 played backwards (checked: backs out of the bathroom and ends on the image 10 view).
 
 C14  10 -> 13
     requested length: 9 s   attempts generated: 2   selected: a2

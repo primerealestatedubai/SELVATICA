@@ -899,8 +899,14 @@ body { background: var(--ground); color: var(--chip-fg); font-family: var(--font
     if (el.paused && !el.ended) { var pr = el.play(); if (pr && pr.catch) pr.catch(function () {}); }   // (play() on a video that has run to its end would start it again from 0)
     var et = el.ended && el.duration ? el.duration : el.currentTime, tF = s.kind === "F" ? et : wDur(it.seg) - et, u = it.rev ? it.b - tF : tF - it.a;
     wTau = it.t0 + Math.max(0, Math.min(it.d, u));
-    var bound = dir > 0 ? it.t0 + it.d : it.t0, j = i + dir;               // look ahead: get the next clip's file onto its first frame before we get there
-    if (j >= 0 && j < wItems.length && Math.abs(bound - wTau) < 1.0 + 0.7 * rate) { var s2 = wSrc(j, dir, bound); if (s2.el !== el) wPark(s2); }
+    var bound = dir > 0 ? it.t0 + it.d : it.t0, j = i + dir;
+    if (j >= 0 && j < wItems.length) {
+      var s2 = wSrc(j, dir, bound), left = Math.abs(bound - wTau);
+      if (s2.el !== el) {                                                  // the next clip is in another file
+        if (left < 1.0 + 0.7 * rate) wPark(s2);                            // look ahead: get that file onto its first frame before we get there
+        if (left <= 0.05 + 0.03 * rate) { wTau = bound; el.pause(); }      // and hand over a hair BEFORE this clip ends: a video runs a few frames past where we read its clock, and those frames belong to some other clip
+      }
+    }
   }
   function wCue(on) {
     if (on) { scrollCue.firstChild.textContent = wReady.F0 ? "Scroll to walk through" : "Loading"; scrollCue.classList.add("dark"); scrollCue.classList.add("on"); }
